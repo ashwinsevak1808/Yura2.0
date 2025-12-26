@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 
 interface ImageWithFallbackProps {
@@ -8,16 +9,23 @@ interface ImageWithFallbackProps {
     alt: string;
     className?: string;
     fallbackClassName?: string;
+    priority?: boolean;
 }
 
-export function ImageWithFallback({ src, alt, className = "", fallbackClassName = "" }: ImageWithFallbackProps) {
+export function ImageWithFallback({
+    src,
+    alt,
+    className = "",
+    fallbackClassName = "",
+    priority = false
+}: ImageWithFallbackProps) {
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(true);
 
     // Show fallback if no src or error
     if (error || !src) {
         return (
-            <div className={`flex items-center justify-center bg-gray-100 ${fallbackClassName || className}`}>
+            <div className={`flex items-center justify-center bg-gray-100 ${fallbackClassName || className || "w-full h-full"}`}>
                 <div className="text-center">
                     <ImageIcon className="w-12 h-12 mx-auto text-gray-300 mb-2" />
                     <p className="text-xs text-gray-400">Image unavailable</p>
@@ -27,27 +35,19 @@ export function ImageWithFallback({ src, alt, className = "", fallbackClassName 
     }
 
     return (
-        <div className="relative w-full h-full">
-            {/* Loading placeholder */}
-            {loading && (
-                <div className={`absolute inset-0 flex items-center justify-center bg-gray-100 ${className}`}>
-                    <div className="animate-pulse">
-                        <ImageIcon className="w-12 h-12 text-gray-300" />
-                    </div>
-                </div>
-            )}
-
-            {/* Actual image */}
-            <img
+        <div className={`relative w-full h-full ${className}`}>
+            <Image
                 src={src}
                 alt={alt}
-                className={className}
+                fill
+                priority={priority}
+                className={`object-cover duration-700 ease-in-out ${loading ? 'scale-110 blur-lg grayscale' : 'scale-100 blur-0 grayscale-0'}`}
+                onLoad={() => setLoading(false)}
                 onError={() => {
                     setError(true);
                     setLoading(false);
                 }}
-                onLoad={() => setLoading(false)}
-                style={{ display: loading ? 'none' : 'block' }}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
         </div>
     );

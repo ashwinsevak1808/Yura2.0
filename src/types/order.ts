@@ -15,6 +15,19 @@ export interface OrderData {
     totalAmount: number;
     items: CartItem[];
 }
+import { Product } from "@/types/product";
+
+export interface OrderItem {
+    id: string;
+    order_id: string;
+    product_id: string;
+    quantity: number;
+    price: number;
+    size: string;
+    color: string;
+    product?: Partial<Product>;
+}
+
 export interface Order {
     id: string;
     created_at: string;
@@ -26,4 +39,5 @@ export interface Order {
     payment_method: string;
     total_amount: number;
     status: string;
+    order_items: OrderItem[];
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Minus, Plus, ShoppingBag, Truck, Shield } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Truck, Shield, ChevronDown, ChevronUp } from "lucide-react";
 import { MainLayout } from "@/components/layout/main_layout";
 import { CartService } from "@/services/cart.service";
 import { CartItem } from "@/types/cart";
@@ -10,6 +10,7 @@ import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
   useEffect(() => {
     setCartItems(CartService.getCart());
@@ -188,8 +189,8 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {/* Order Summary - Sticky Sidebar */}
-              <div className="lg:col-span-1">
+              {/* Order Summary - Sticky Sidebar - HIDDEN ON MOBILE */}
+              <div className="hidden lg:block lg:col-span-1">
                 <div className="bg-white p-6 lg:sticky lg:top-32">
                   <h2 className="text-xs font-bold uppercase tracking-widest text-black mb-6 pb-4 border-b border-gray-100">
                     Order Summary
@@ -239,6 +240,50 @@ export default function CartPage() {
           )}
         </div>
       </div>
+
+      {/* Mobile Sticky Footer with Expandable Summary */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40">
+          {/* Expandable Breakdown */}
+          {isSummaryOpen && (
+            <div className="px-4 pt-4 pb-2 border-b border-gray-100 bg-gray-50">
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 font-light">Subtotal</dt>
+                  <dd className="text-black font-medium">₹{subtotal.toLocaleString()}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 font-light">Shipping</dt>
+                  <dd className="text-black font-medium">{shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`}</dd>
+                </div>
+              </dl>
+            </div>
+          )}
+
+          {/* Main Footer Bar */}
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between mb-3">
+              <button
+                onClick={() => setIsSummaryOpen(!isSummaryOpen)}
+                className="flex items-center gap-1 text-xs uppercase tracking-widest text-gray-500 font-bold"
+              >
+                {isSummaryOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                <span>{isSummaryOpen ? 'Hide' : 'Show'} Details</span>
+              </button>
+              <div className="text-right">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-0.5">Total</p>
+                <p className="text-xl font-medium text-black">₹{total.toLocaleString()}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => window.location.href = "/checkout"}
+              className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
+            >
+              Checkout
+            </button>
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 }

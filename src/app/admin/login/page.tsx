@@ -39,45 +39,61 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <MainLayout>
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-                    <div>
-                        <h2 className="mt-6 text-center text-3xl font-serif font-bold text-gray-900">
-                            Admin Login
-                        </h2>
-                        <p className="mt-2 text-center text-sm text-gray-600">
-                            Restricted access for store owners only.
-                        </p>
+        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white">
+            <div className="w-full max-w-md p-8 sm:p-12">
+                {/* Brand Logo */}
+                <div className="text-center mb-12">
+                    <h1 className="text-5xl font-serif font-medium tracking-tighter text-white mb-4">YURA.</h1>
+                    <div className="h-px w-16 bg-white/20 mx-auto" />
+                </div>
+
+                {/* Login Card */}
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    <div className="text-center space-y-2">
+                        <h2 className="text-xl font-medium tracking-wide">Admin Access</h2>
+                        <p className="text-sm text-gray-400">Enter your credentials to manage the store.</p>
                     </div>
-                    <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-                        <Input
-                            id="email-address"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            required
-                            label="Email address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+
+                    <form className="space-y-6" onSubmit={handleLogin}>
+                        <div className="space-y-2">
+                            <label htmlFor="email-address" className="block text-xs font-bold uppercase tracking-widest text-gray-500">
+                                Email Address
+                            </label>
+                            <Input
+                                id="email-address"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                required
+                                placeholder="name@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-white focus:ring-1 focus:ring-white h-12 rounded-none px-4 font-mono text-sm"
+                            />
+                        </div>
 
                         {message && (
-                            <div className={`text-sm text-center ${message.includes("Check") ? "text-green-600" : "text-red-600"}`}>
+                            <div className={`p-4 text-sm text-center border ${message.includes("Check") ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
                                 {message}
                             </div>
                         )}
 
                         <Button
                             type="submit"
-                            fullWidth
-                            isLoading={loading}
+                            disabled={loading}
+                            className="w-full h-12 text-black hover:bg-gray-200 text-xs font-bold uppercase tracking-[0.2em] rounded-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Send Magic Link
+                            {loading ? "Verifying..." : "Send Magic Link"}
                         </Button>
                     </form>
+
+                    <div className="text-center">
+                        <p className="text-xs text-gray-600">
+                            Protected by secure authentication.
+                        </p>
+                    </div>
                 </div>
             </div>
-        </MainLayout>
+        </div>
     );
 }

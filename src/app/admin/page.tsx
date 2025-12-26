@@ -41,35 +41,38 @@ export default function AdminDashboard() {
     }
 
     const statCards = [
-        { name: "Total Revenue", value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "bg-green-500" },
-        { name: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, color: "bg-blue-500" },
-        { name: "Total Products", value: stats.totalProducts, icon: Package, color: "bg-purple-500" },
-        { name: "Avg. Order Value", value: `₹${Math.round(stats.averageOrderValue).toLocaleString()}`, icon: TrendingUp, color: "bg-orange-500" },
+        { name: "Total Revenue", value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, change: "+12.5%", trend: "up" },
+        { name: "Total Orders", value: stats.totalOrders, icon: ShoppingBag, change: "+4.3%", trend: "up" },
+        { name: "Total Products", value: stats.totalProducts, icon: Package, change: "0%", trend: "neutral" },
+        { name: "Avg. Order Value", value: `₹${Math.round(stats.averageOrderValue).toLocaleString()}`, icon: TrendingUp, change: "-2.1%", trend: "down" },
     ];
 
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-serif font-bold text-gray-900">Dashboard</h1>
+        <div className="space-y-12">
+            <div>
+                <h1 className="text-3xl font-serif font-medium text-black tracking-tight">Dashboard Overview</h1>
+                <p className="mt-2 text-sm text-gray-500">Welcome back, here's what's happening today.</p>
+            </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {statCards.map((item) => {
                     const Icon = item.icon;
                     return (
-                        <div key={item.name} className="bg-white overflow-hidden shadow rounded-lg">
-                            <div className="p-5">
-                                <div className="flex items-center">
-                                    <div className="flex-shrink-0">
-                                        <div className={`rounded-md p-3 ${item.color}`}>
-                                            <Icon className="h-6 w-6 text-white" aria-hidden="true" />
-                                        </div>
-                                    </div>
-                                    <div className="ml-5 w-0 flex-1">
-                                        <dl>
-                                            <dt className="text-sm font-medium text-gray-500 truncate">{item.name}</dt>
-                                            <dd className="text-lg font-medium text-gray-900">{item.value}</dd>
-                                        </dl>
-                                    </div>
+                        <div key={item.name} className="bg-white p-6 border border-gray-100 shadow-sm relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <Icon className="w-16 h-16 text-black" />
+                            </div>
+                            <div className="relative">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{item.name}</p>
+                                <p className="mt-4 text-3xl font-serif font-medium text-gray-900">{item.value}</p>
+                                <div className="mt-4 flex items-center">
+                                    <span className={`text-xs font-medium ${item.trend === 'up' ? 'text-green-600' :
+                                        item.trend === 'down' ? 'text-red-600' : 'text-gray-600'
+                                        }`}>
+                                        {item.change}
+                                    </span>
+                                    <span className="ml-2 text-xs text-gray-400">from last month</span>
                                 </div>
                             </div>
                         </div>
@@ -78,64 +81,62 @@ export default function AdminDashboard() {
             </div>
 
             {/* Recent Orders */}
-            <div className="bg-white shadow rounded-lg">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Recent Orders</h3>
+            <div className="bg-white border border-gray-100 shadow-sm">
+                <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
+                    <h3 className="text-lg font-serif font-medium text-gray-900">Recent Orders</h3>
+                    <a href="/admin/orders" className="text-xs font-bold uppercase tracking-widest text-black hover:text-gray-600 border-b border-black hover:border-gray-600 pb-0.5 transition-all">
+                        View All
+                    </a>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-gray-100">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                     Order ID
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                     Customer
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                     Date
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                     Total
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-8 py-5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                     Status
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white divide-y divide-gray-50">
                             {recentOrders.map((order) => (
-                                <tr key={order.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-black font-mono">
                                         #{order.id.slice(0, 8)}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-600">
                                         {order.customer_name}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-8 py-5 whitespace-nowrap text-sm text-gray-500">
                                         {new Date(order.created_at).toLocaleDateString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-8 py-5 whitespace-nowrap text-sm font-medium text-gray-900 font-serif">
                                         ₹{order.total_amount.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                                order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                                                    order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-gray-100 text-gray-800'}`}>
-                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    <td className="px-8 py-5 whitespace-nowrap">
+                                        <span className={`px-3 py-1 inline-flex text-[10px] font-bold uppercase tracking-widest border 
+                                            ${order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-100' :
+                                                order.status === 'shipped' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                    order.status === 'processing' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                                                        'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                            {order.status}
                                         </span>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>
-                <div className="px-4 py-4 sm:px-6 border-t border-gray-200">
-                    <a href="/admin/orders" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                        View all orders <span aria-hidden="true">&rarr;</span>
-                    </a>
                 </div>
             </div>
         </div>

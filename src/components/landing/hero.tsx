@@ -159,6 +159,7 @@ export default function PremiumHeroBanner({ products }: PremiumHeroBannerProps) 
                     <ImageWithFallback
                       src={primaryImage?.image_url}
                       alt={product.name}
+                      priority={index === 0}
                       className="w-full h-full object-cover"
                     />
                   </div>

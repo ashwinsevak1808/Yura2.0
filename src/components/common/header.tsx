@@ -10,10 +10,12 @@ const NAVIGATION = [
   { id: "care", href: "/information/returns", title: "Customer Care" },
 ];
 
+import { useCart } from "@/context/cart-context";
+
 export default function PremiumKurtiHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartItems, setCartItems] = useState(3);
+  const { cartCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,12 +28,16 @@ export default function PremiumKurtiHeader() {
   return (
     <div className="fixed w-full z-50">
       {/* Subtle Top Banner */}
-      <div className="bg-gray-900 text-white border-b border-gray-800">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-center text-xs py-2 tracking-wider">
-            <span className="font-light">Handcrafted with Care</span>
-            <span className="mx-3 text-gray-600">•</span>
-            <span className="font-light">Free Shipping Above ₹1,500</span>
+      <div className="bg-gray-900 text-white border-b border-gray-800 overflow-hidden relative h-[32px]">
+        <div className="absolute top-0 left-0 w-full h-full flex items-center overflow-hidden">
+          <div className="flex whitespace-nowrap animate-marquee">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="flex items-center mx-8 text-xs tracking-wider">
+                <span className="font-medium text-yellow-200 mr-2">LAUNCH OFFER:</span>
+                <span className="font-light mr-4">Get 25% OFF on all products! Valid until Feb 26, 2026</span>
+                <span className="text-gray-600">•</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -78,9 +84,9 @@ export default function PremiumKurtiHeader() {
 
               <a href="/cart" className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors duration-300">
                 <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
-                {cartItems > 0 && (
+                {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-gray-900 text-white text-[10px] font-medium rounded-full px-1">
-                    {cartItems}
+                    {cartCount}
                   </span>
                 )}
               </a>
@@ -153,6 +159,13 @@ export default function PremiumKurtiHeader() {
             opacity: 1;
             transform: translateX(0);
           }
+        }
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 20s linear infinite;
         }
       `}</style>
     </div>

@@ -6,7 +6,7 @@ import { MainLayout } from "@/components/layout/main_layout";
 import { CartService } from "@/services/cart.service";
 import { submitOrderAction } from "@/app/actions/checkout";
 import { OrderData, CartItem } from "@/types";
-import { Lock, ShoppingBag } from "lucide-react";
+import { Lock, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 
 export default function CheckoutPage() {
@@ -14,6 +14,7 @@ export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -109,7 +110,7 @@ export default function CheckoutPage() {
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} id="checkout-form">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                             {/* Left Column - Forms (2 columns) */}
@@ -268,8 +269,8 @@ export default function CheckoutPage() {
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <label className={`relative flex flex-col p-6 border-2 cursor-pointer transition-all ${formData.paymentMethod === "COD"
-                                                ? "border-black bg-black text-white"
-                                                : "border-gray-200 hover:border-black"
+                                            ? "border-black bg-black text-white"
+                                            : "border-gray-200 hover:border-black"
                                             }`}>
                                             <input
                                                 type="radio"
@@ -297,8 +298,8 @@ export default function CheckoutPage() {
                                         </label>
 
                                         <label className={`relative flex flex-col p-6 border-2 cursor-pointer transition-all ${formData.paymentMethod === "UPI"
-                                                ? "border-black bg-black text-white"
-                                                : "border-gray-200 hover:border-black"
+                                            ? "border-black bg-black text-white"
+                                            : "border-gray-200 hover:border-black"
                                             }`}>
                                             <input
                                                 type="radio"
@@ -328,8 +329,8 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
-                            {/* Right Column - Order Summary */}
-                            <div className="lg:col-span-1">
+                            {/* Right Column - Order Summary - HIDDEN ON MOBILE */}
+                            <div className="hidden lg:block lg:col-span-1">
                                 <div className="bg-white p-6 lg:sticky lg:top-32">
                                     <h2 className="text-xs font-bold uppercase tracking-widest text-black mb-6 pb-4 border-b border-gray-100">
                                         Order Summary
@@ -402,6 +403,60 @@ export default function CheckoutPage() {
                                         Your payment information is secure
                                     </p>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile Sticky Footer with Expandable Summary */}
+                        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40">
+                            {/* Expandable Breakdown */}
+                            {isSummaryOpen && (
+                                <div className="px-4 pt-4 pb-2 border-b border-gray-100 bg-gray-50">
+                                    <dl className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <dt className="text-gray-600 font-light">Subtotal</dt>
+                                            <dd className="text-black font-medium">₹{subtotal.toLocaleString()}</dd>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <dt className="text-gray-600 font-light">Shipping</dt>
+                                            <dd className="text-black font-medium">{shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`}</dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            )}
+
+                            {/* Main Footer Bar */}
+                            <div className="px-4 py-3">
+                                <div className="flex items-center justify-between mb-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSummaryOpen(!isSummaryOpen)}
+                                        className="flex items-center gap-1 text-xs uppercase tracking-widest text-gray-500 font-bold"
+                                    >
+                                        {isSummaryOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                                        <span>{isSummaryOpen ? 'Hide' : 'Show'} Details</span>
+                                    </button>
+                                    <div className="text-right">
+                                        <p className="text-xs uppercase tracking-wider text-gray-400 mb-0.5">Total</p>
+                                        <p className="text-xl font-medium text-black">₹{total.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Lock className="w-4 h-4" />
+                                            Place Order
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </form>
