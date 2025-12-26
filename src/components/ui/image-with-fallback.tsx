@@ -14,6 +14,7 @@ export function ImageWithFallback({ src, alt, className = "", fallbackClassName 
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    // Show fallback if no src or error
     if (error || !src) {
         return (
             <div className={`flex items-center justify-center bg-gray-100 ${fallbackClassName || className}`}>
@@ -26,7 +27,8 @@ export function ImageWithFallback({ src, alt, className = "", fallbackClassName 
     }
 
     return (
-        <>
+        <div className="relative w-full h-full">
+            {/* Loading placeholder */}
             {loading && (
                 <div className={`absolute inset-0 flex items-center justify-center bg-gray-100 ${className}`}>
                     <div className="animate-pulse">
@@ -34,14 +36,19 @@ export function ImageWithFallback({ src, alt, className = "", fallbackClassName 
                     </div>
                 </div>
             )}
+
+            {/* Actual image */}
             <img
                 src={src}
                 alt={alt}
                 className={className}
-                onError={() => setError(true)}
+                onError={() => {
+                    setError(true);
+                    setLoading(false);
+                }}
                 onLoad={() => setLoading(false)}
                 style={{ display: loading ? 'none' : 'block' }}
             />
-        </>
+        </div>
     );
 }

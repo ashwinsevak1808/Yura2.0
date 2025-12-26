@@ -93,7 +93,7 @@ export default function ProductPage() {
 
   return (
     <MainLayout>
-      <div className="bg-white min-h-screen pb-20">
+      <div className="bg-white min-h-screen pb-20 pt-16">
         <div className="pt-28 lg:pt-32">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -286,18 +286,6 @@ export default function ProductPage() {
 
               </div>
             </div>
-
-            {/* Related Products - Clean Header */}
-            {relatedProducts.length > 0 && (
-              <div className="mt-24 lg:mt-32 mb-16 border-t border-gray-100 pt-16">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-serif font-medium text-black mb-4">You May Also Like</h2>
-                  <a href="/collections" className="text-xs uppercase tracking-widest text-gray-500 hover:text-black border-b border-transparent hover:border-black transition-all pb-1">View All Products</a>
-                </div>
-
-                <ProductGridSection products={relatedProducts} />
-              </div>
-            )}
           </div>
         </div>
       </div>
