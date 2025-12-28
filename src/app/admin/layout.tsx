@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
         { name: "Products", href: "/admin/products", icon: ShoppingBag },
         { name: "Orders", href: "/admin/orders", icon: Package },
-        // { name: "Customers", href: "/admin/customers", icon: Users }, // Future
+        { name: "Testimonials", href: "/admin/testimonials", icon: Users }, // Using Users icon as a placeholder since Star isn't imported yet
     ];
 
     return (

@@ -93,6 +93,9 @@ function CollectionsContent() {
     const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
     const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc">((searchParams.get("sort") as any) || "newest");
 
+    // Check if accessed via offer link
+    const isOfferPage = searchParams.get("offer") === "launch";
+
     // Fetch Products
     useEffect(() => {
         async function fetchProducts() {
@@ -148,7 +151,8 @@ function CollectionsContent() {
         (minPrice > 0 || maxPrice < 10000 ? 1 : 0) +
         selectedSizes.length;
 
-    const categories = ["All", "Anarkali", "Straight Cut", "A-Line", "Kurti Sets", "Block Print", "Casual"];
+    // Get unique categories from actual products
+    const categories = ["All", ...Array.from(new Set(products.map(p => p.category))).filter((c): c is string => typeof c === "string" && c !== "" && c !== null && c !== undefined)];
 
     return (
         <div className="bg-white min-h-screen pb-20">
@@ -161,13 +165,26 @@ function CollectionsContent() {
                     />
                     <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl">
                         <div className="flex flex-col h-full">
-                            <div className="flex items-center justify-between px-6 py-6 border-b border-gray-100">
-                                <h2 className="text-sm font-bold uppercase tracking-widest text-black">Filter By</h2>
-                                <button onClick={() => setIsMobileFiltersOpen(false)} className="text-black hover:text-gray-600 transition-colors">
-                                    <X className="h-5 w-5" />
+                            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                                <h2 className="text-base font-bold uppercase tracking-widest text-black">Filters</h2>
+                                <button onClick={() => setIsMobileFiltersOpen(false)} className="text-black hover:text-gray-600 transition-colors p-1">
+                                    <X className="h-6 w-6" />
                                 </button>
                             </div>
-                            <div className="flex-1 overflow-y-auto px-6 py-8 space-y-10">
+                            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+                                {/* Active Filters Count */}
+                                {activeFiltersCount > 0 && (
+                                    <div className="bg-gray-50 px-4 py-3 rounded-lg flex items-center justify-between">
+                                        <p className="text-sm text-gray-600">{activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} applied</p>
+                                        <button
+                                            onClick={clearAllFilters}
+                                            className="text-xs text-black font-medium uppercase tracking-wider hover:underline"
+                                        >
+                                            Clear All
+                                        </button>
+                                    </div>
+                                )}
+
                                 <div>
                                     <h3 className="text-xs font-bold uppercase tracking-widest text-black mb-4">Category</h3>
                                     <div className="space-y-2">
@@ -175,9 +192,9 @@ function CollectionsContent() {
                                             <button
                                                 key={c}
                                                 onClick={() => setCategory(c)}
-                                                className={`w-full text-left py-2 text-sm font-light transition-colors ${category === c
-                                                    ? "text-black font-medium pl-2 border-l-2 border-black"
-                                                    : "text-gray-500 hover:text-black"
+                                                className={`w-full text-left py-3 px-4 text-sm font-light transition-all rounded-lg ${category === c
+                                                    ? "bg-black text-white font-medium"
+                                                    : "text-gray-700 hover:bg-gray-50"
                                                     }`}
                                             >
                                                 {c}
@@ -208,6 +225,26 @@ function CollectionsContent() {
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-32">
                 {/* Hero / Header Section */}
                 <div className="py-12 md:py-16 border-b border-gray-100 mb-12">
+                    {/* Offer Banner */}
+                    {isOfferPage && (
+                        <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-400 p-6 mb-8 rounded-r-lg">
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0">
+                                    <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                                        <span className="text-2xl">🎉</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold text-black mb-1">LAUNCH OFFER - 25% OFF!</h3>
+                                    <p className="text-sm text-gray-700 font-light">
+                                        All products in this collection are eligible for our special launch discount of 25% OFF.
+                                        Offer valid until Feb 26, 2026.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="max-w-4xl">
                         <p className="text-xs font-bold text-black mb-4 uppercase tracking-widest">
                             Collection 2025

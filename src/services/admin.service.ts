@@ -254,24 +254,64 @@ export const AdminService = {
 
     async createProduct(productData: any) {
         try {
-            // 1. Insert product
-            const { data: product, error: productError } = await supabase
+            // Prepare base product data
+            const baseProductData = {
+                name: productData.name,
+                slug: productData.slug,
+                description: productData.description,
+                full_description: productData.full_description,
+                price: productData.price,
+                original_price: productData.original_price,
+                inventory: productData.stock,
+                category: productData.category,
+                is_active: productData.is_active,
+            };
+
+            // Try to add SEO metadata if fields exist
+            const productDataWithSEO = {
+                ...baseProductData,
+                meta_title: productData.meta_title || null,
+                meta_description: productData.meta_description || null,
+                meta_keywords: productData.meta_keywords || null,
+                og_image: productData.og_image || null,
+                og_title: productData.og_title || null,
+                og_description: productData.og_description || null,
+                twitter_card: productData.twitter_card || 'summary_large_image',
+                twitter_title: productData.twitter_title || null,
+                twitter_description: productData.twitter_description || null,
+                twitter_image: productData.twitter_image || null,
+            };
+
+            // 1. Insert product (try with SEO first, fallback to without)
+            let product, productError;
+
+            const result1 = await supabase
                 .from("products")
-                .insert({
-                    name: productData.name,
-                    slug: productData.slug,
-                    description: productData.description,
-                    full_description: productData.full_description,
-                    price: productData.price,
-                    original_price: productData.original_price,
-                    stock: productData.stock,
-                    category: productData.category,
-                    is_active: productData.is_active
-                })
+                .insert(productDataWithSEO)
                 .select()
                 .single();
 
-            if (productError) throw productError;
+            product = result1.data;
+            productError = result1.error;
+
+            // If error is about missing columns, try without SEO fields
+            if (productError && productError.message?.includes('column')) {
+                console.log('SEO columns not found, creating product without SEO metadata...');
+                const result2 = await supabase
+                    .from("products")
+                    .insert(baseProductData)
+                    .select()
+                    .single();
+
+                product = result2.data;
+                productError = result2.error;
+            }
+
+            if (productError) {
+                console.error('Product insert error:', productError);
+                throw productError;
+            }
+
             const productId = product.id;
 
             // 2. Insert Images
@@ -284,38 +324,39 @@ export const AdminService = {
                 const { error: imagesError } = await supabase
                     .from("product_images")
                     .insert(imagesToInsert);
-                if (imagesError) throw imagesError;
+                if (imagesError) {
+                    console.error('Images insert error:', imagesError);
+                    throw imagesError;
+                }
             }
 
-            // 3. Insert Sizes
+            // 3. Insert Sizes with Stock
             if (productData.sizes && productData.sizes.length > 0) {
-                const sizesToInsert = productData.sizes.map((size: string) => ({
+                const sizesToInsert = productData.sizes.map((sizeItem: any) => ({
                     product_id: productId,
-                    size: size
+                    size: sizeItem.size || sizeItem,
+                    stock: sizeItem.stock || 0
                 }));
                 const { error: sizesError } = await supabase
                     .from("product_sizes")
                     .insert(sizesToInsert);
-                if (sizesError) throw sizesError;
+                if (sizesError) {
+                    console.error('Sizes insert error:', sizesError);
+                    throw sizesError;
+                }
             }
 
-            // 4. Insert Colors
-            if (productData.colors && productData.colors.length > 0) {
-                const colorsToInsert = productData.colors.map((color: any) => ({
-                    product_id: productId,
-                    color_name: color.name,
-                    color_hex: color.hex,
-                    in_stock: true
-                }));
-                const { error: colorsError } = await supabase
-                    .from("product_colors")
-                    .insert(colorsToInsert);
-                if (colorsError) throw colorsError;
-            }
+            // 4. Insert Colors - REMOVED (Deprecated)
 
             return { success: true, productId };
-        } catch (error) {
+        } catch (error: any) {
             console.error("Create product failed:", error);
+            console.error("Error details:", {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            });
             throw error;
         }
     },
@@ -324,8 +365,7 @@ export const AdminService = {
             .from('products')
             .select(`
                 *,
-                product_sizes(size),
-                product_colors(color_name, color_hex, in_stock),
+                product_sizes(size, stock),
                 product_images(image_url, is_primary),
                 product_specifications(spec_name, spec_value)
             `)
@@ -339,7 +379,7 @@ export const AdminService = {
         return data.map((product: any) => ({
             ...product,
             sizes: product.product_sizes,
-            colors: product.product_colors,
+            colors: [],
             images: product.product_images,
             specifications: product.product_specifications
         }));
@@ -349,8 +389,7 @@ export const AdminService = {
             .from('products')
             .select(`
                 *,
-                product_sizes(size),
-                product_colors(color_name, color_hex, in_stock),
+                product_sizes(size, stock),
                 product_images(id, image_url, is_primary),
                 product_specifications(spec_name, spec_value)
             `)
@@ -365,14 +404,14 @@ export const AdminService = {
         return {
             ...data,
             sizes: data.product_sizes,
-            colors: data.product_colors,
+            colors: [],
             images: data.product_images,
             specifications: data.product_specifications
         };
     },
 
     async updateProduct(id: string, productData: any) {
-        // 1. Update basic fields
+        // 1. Update basic fields and SEO metadata
         const { error: productError } = await supabase
             .from("products")
             .update({
@@ -382,9 +421,20 @@ export const AdminService = {
                 full_description: productData.full_description,
                 price: productData.price,
                 original_price: productData.original_price,
-                stock: productData.stock,
+                inventory: productData.stock,
                 category: productData.category,
-                is_active: productData.is_active
+                is_active: productData.is_active,
+                // SEO Metadata
+                meta_title: productData.meta_title || null,
+                meta_description: productData.meta_description || null,
+                meta_keywords: productData.meta_keywords || null,
+                og_image: productData.og_image || null,
+                og_title: productData.og_title || null,
+                og_description: productData.og_description || null,
+                twitter_card: productData.twitter_card || 'summary_large_image',
+                twitter_title: productData.twitter_title || null,
+                twitter_description: productData.twitter_description || null,
+                twitter_image: productData.twitter_image || null,
             })
             .eq('id', id);
 

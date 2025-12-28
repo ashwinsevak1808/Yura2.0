@@ -45,14 +45,14 @@ export default function InstagramFeed() {
                     <div className="inline-flex items-center gap-2 mb-3 px-4 py-1.5">
                         <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Instagram</span>
                     </div>
-                    <h2 className="text-3xl sm:text-4xl font-serif font-medium text-black">Follow Us @Yura.Label</h2>
+                    <h2 className="text-3xl sm:text-4xl font-serif font-medium text-black">Follow Us @_yuraaclothing_</h2>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0.5">
                     {INSTAGRAM_POSTS.map((post) => (
                         <a
                             key={post.id}
-                            href="https://instagram.com"
+                            href="https://instagram.com/_yuraaclothing_"
                             target="_blank"
                             rel="noreferrer"
                             className="group relative aspect-square block overflow-hidden bg-gray-100"
@@ -75,8 +75,9 @@ export default function InstagramFeed() {
 
                 <div className="text-center mt-12">
                     <a
-                        href="https://instagram.com"
+                        href="https://instagram.com/_yuraaclothing_"
                         target="_blank"
+                        rel="noreferrer"
                         className="inline-block border-b border-black pb-1 text-xs font-bold uppercase tracking-widest hover:text-gray-600 transition-colors"
                     >
                         View Full Feed

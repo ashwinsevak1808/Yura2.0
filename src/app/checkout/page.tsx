@@ -5,9 +5,18 @@ import { useRouter } from "next/navigation";
 import { MainLayout } from "@/components/layout/main_layout";
 import { CartService } from "@/services/cart.service";
 import { submitOrderAction } from "@/app/actions/checkout";
+import { createRazorpayOrder, verifyRazorpayPayment } from "@/app/actions/payment";
 import { OrderData, CartItem } from "@/types";
 import { Lock, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+
+// Declare Razorpay on window object
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -26,7 +35,7 @@ export default function CheckoutPage() {
         state: "",
         zipCode: "",
         specialInstructions: "",
-        paymentMethod: "COD" as "COD" | "UPI",
+        paymentMethod: "COD" as "COD" | "ONLINE",
     });
 
     useEffect(() => {
@@ -69,18 +78,161 @@ export default function CheckoutPage() {
         };
 
         try {
-            const result = await submitOrderAction(orderData);
+            // If COD, submit order directly
+            if (formData.paymentMethod === "COD") {
+                const result = await submitOrderAction(orderData);
 
-            if (result.success) {
-                CartService.clearCart();
-                router.push("/order/confirmed");
-            } else {
-                throw new Error(result.message);
+                if (result.success) {
+                    CartService.clearCart();
+                    router.push(`/order/confirmed?order_id=${result.orderId}&payment_method=COD`);
+                } else {
+                    throw new Error(result.message);
+                }
+            }
+            // If ONLINE, create Razorpay order and open payment modal
+            else if (formData.paymentMethod === "ONLINE") {
+                // First, create a temporary order ID
+                const tempOrderId = `ORDER-${Date.now()}`;
+
+                // Create Razorpay order
+                const razorpayOrderResult = await createRazorpayOrder({
+                    amount: total,
+                    orderId: tempOrderId,
+                    customerName: orderData.customerName,
+                    customerEmail: orderData.customerEmail,
+                    customerPhone: orderData.customerPhone,
+                });
+
+                if (!razorpayOrderResult.success) {
+                    throw new Error("Failed to create payment order");
+                }
+
+                // Load Razorpay script if not already loaded
+                if (!window.Razorpay) {
+                    const script = document.createElement("script");
+                    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+                    script.async = true;
+                    document.body.appendChild(script);
+                    await new Promise((resolve) => {
+                        script.onload = resolve;
+                    });
+                }
+
+                // Configure Razorpay options
+                const options = {
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                    amount: razorpayOrderResult.amount,
+                    currency: razorpayOrderResult.currency,
+                    name: "YURAA",
+                    description: "Order Payment",
+                    order_id: razorpayOrderResult.orderId,
+                    prefill: {
+                        name: orderData.customerName,
+                        email: orderData.customerEmail,
+                        contact: orderData.customerPhone,
+                    },
+                    notes: {
+                        customer_name: orderData.customerName,
+                        customer_email: orderData.customerEmail,
+                        shipping_address: JSON.stringify(orderData.shippingAddress),
+                    },
+                    theme: {
+                        color: "#000000",
+                    },
+                    handler: async function (response: any) {
+                        try {
+                            console.log("Payment successful:", response);
+
+                            // Verify payment signature
+                            const verifyResult = await verifyRazorpayPayment({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                            });
+
+                            if (verifyResult.success) {
+                                // Payment verified, now create the order in database
+                                const orderResult = await submitOrderAction({
+                                    ...orderData,
+                                    razorpayOrderId: response.razorpay_order_id,
+                                    razorpayPaymentId: response.razorpay_payment_id,
+                                });
+
+                                if (orderResult.success) {
+                                    CartService.clearCart();
+                                    // Redirect to order confirmed page with payment details
+                                    router.push(
+                                        `/order/confirmed?order_id=${orderResult.orderId}&payment_method=ONLINE&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}`
+                                    );
+                                } else {
+                                    throw new Error("Failed to create order after payment");
+                                }
+                            } else {
+                                throw new Error("Payment verification failed");
+                            }
+                        } catch (error) {
+                            console.error("Payment handler error:", error);
+                            // Redirect to failure page
+                            const errorMsg = error instanceof Error ? error.message : "Order creation failed";
+                            router.push(
+                                `/payment/failure?reason=Order Creation Failed&description=${encodeURIComponent(errorMsg)}. Please contact support.&payment_id=${response.razorpay_payment_id || ""}`
+                            );
+                            setSubmitting(false);
+                        }
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            setSubmitting(false);
+                            console.log("Payment modal dismissed by user");
+                        },
+                        // Handle payment errors in modal
+                        escape: true,
+                        confirm_close: false,
+                        // Add error handler
+                        backdropclose: true,
+                    },
+                };
+
+                // Create Razorpay instance
+                const razorpay = new window.Razorpay(options);
+
+                // Add payment failure handler
+                razorpay.on('payment.failed', function (response: any) {
+                    console.log("=== PAYMENT FAILED EVENT FIRED ===");
+                    console.error("Payment failed response:", response);
+
+                    // Handle empty or undefined error object
+                    const error = response?.error || {};
+                    // If response is completely empty, use better defaults
+                    const reason = error.reason || error.code || "Payment Declined";
+                    const description = error.description || error.source || "Your payment could not be processed. This may be due to insufficient funds, incorrect card details, or your bank declining the transaction. Please try again or use a different payment method.";
+                    const orderId = error.metadata?.order_id || "";
+                    const paymentId = error.metadata?.payment_id || "";
+
+                    console.log("Error details:", { reason, description, orderId, paymentId });
+
+                    // Close the modal
+                    try {
+                        razorpay.close();
+                        console.log("Modal closed");
+                    } catch (e) {
+                        console.log("Modal close error:", e);
+                    }
+
+                    // Redirect to failure page
+                    const failureUrl = `/payment/failure?reason=${encodeURIComponent(reason)}&description=${encodeURIComponent(description)}&order_id=${encodeURIComponent(orderId)}&payment_id=${encodeURIComponent(paymentId)}`;
+                    console.log("Redirecting to:", failureUrl);
+
+                    // Use window.location.href for forced redirect (more reliable)
+                    window.location.href = failureUrl;
+                });
+
+                // Open Razorpay payment modal
+                razorpay.open();
             }
         } catch (error) {
             alert("Failed to place order. Please try again.");
             console.error(error);
-        } finally {
             setSubmitting(false);
         }
     };
@@ -100,9 +252,16 @@ export default function CheckoutPage() {
             <div className="bg-gray-50 min-h-screen pb-20 pt-16">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-32">
 
+                    {/* Breadcrumb */}
+                    <Breadcrumb items={[
+                        { label: 'Home', href: '/' },
+                        { label: 'Shopping Bag', href: '/cart' },
+                        { label: 'Checkout' }
+                    ]} />
+
                     {/* Header */}
-                    <div className="mb-12">
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium text-black mb-2 leading-tight">
+                    <div className="mb-8 md:mb-12">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-medium text-black mb-2 leading-tight">
                             Checkout
                         </h1>
                         <p className="text-sm text-gray-500 font-light">
@@ -117,11 +276,11 @@ export default function CheckoutPage() {
                             <div className="lg:col-span-2 space-y-8">
 
                                 {/* Contact Information */}
-                                <div className="bg-white p-8">
+                                <div className="bg-white p-6 sm:p-8">
                                     <h2 className="text-xs font-bold uppercase tracking-widest text-black mb-6 pb-4 border-b border-gray-100">
                                         Contact Information
                                     </h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                         <div>
                                             <label htmlFor="firstName" className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
                                                 First Name *
@@ -182,11 +341,11 @@ export default function CheckoutPage() {
                                 </div>
 
                                 {/* Shipping Address */}
-                                <div className="bg-white p-8">
+                                <div className="bg-white p-6 sm:p-8">
                                     <h2 className="text-xs font-bold uppercase tracking-widest text-black mb-6 pb-4 border-b border-gray-100">
                                         Shipping Address
                                     </h2>
-                                    <div className="space-y-6">
+                                    <div className="space-y-4 sm:space-y-6">
                                         <div>
                                             <label htmlFor="street" className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
                                                 Street Address *
@@ -201,7 +360,7 @@ export default function CheckoutPage() {
                                                 className="w-full px-4 py-3 border border-gray-200 text-sm font-light focus:outline-none focus:border-black transition-colors"
                                             />
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                                             <div>
                                                 <label htmlFor="city" className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
                                                     City *
@@ -263,11 +422,11 @@ export default function CheckoutPage() {
                                 </div>
 
                                 {/* Payment Method */}
-                                <div className="bg-white p-8">
+                                <div className="bg-white p-6 sm:p-8">
                                     <h2 className="text-xs font-bold uppercase tracking-widest text-black mb-6 pb-4 border-b border-gray-100">
                                         Payment Method
                                     </h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <label className={`relative flex flex-col p-6 border-2 cursor-pointer transition-all ${formData.paymentMethod === "COD"
                                             ? "border-black bg-black text-white"
                                             : "border-gray-200 hover:border-black"
@@ -297,32 +456,32 @@ export default function CheckoutPage() {
                                             </p>
                                         </label>
 
-                                        <label className={`relative flex flex-col p-6 border-2 cursor-pointer transition-all ${formData.paymentMethod === "UPI"
+                                        <label className={`relative flex flex-col p-6 border-2 cursor-pointer transition-all ${formData.paymentMethod === "ONLINE"
                                             ? "border-black bg-black text-white"
                                             : "border-gray-200 hover:border-black"
                                             }`}>
                                             <input
                                                 type="radio"
                                                 name="paymentMethod"
-                                                value="UPI"
-                                                checked={formData.paymentMethod === "UPI"}
+                                                value="ONLINE"
+                                                checked={formData.paymentMethod === "ONLINE"}
                                                 onChange={handleInputChange}
                                                 className="sr-only"
                                             />
                                             <div className="flex items-center justify-between mb-2">
-                                                <p className={`text-sm font-bold uppercase tracking-wider ${formData.paymentMethod === "UPI" ? "text-white" : "text-black"
+                                                <p className={`text-sm font-bold uppercase tracking-wider ${formData.paymentMethod === "ONLINE" ? "text-white" : "text-black"
                                                     }`}>
-                                                    UPI Payment
+                                                    Online Payment
                                                 </p>
-                                                {formData.paymentMethod === "UPI" && (
+                                                {formData.paymentMethod === "ONLINE" && (
                                                     <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
                                                         <div className="w-2.5 h-2.5 rounded-full bg-black"></div>
                                                     </div>
                                                 )}
                                             </div>
-                                            <p className={`text-xs font-light ${formData.paymentMethod === "UPI" ? "text-gray-300" : "text-gray-500"
+                                            <p className={`text-xs font-light ${formData.paymentMethod === "ONLINE" ? "text-gray-300" : "text-gray-500"
                                                 }`}>
-                                                Pay securely via UPI
+                                                Pay securely via Razorpay
                                             </p>
                                         </label>
                                     </div>

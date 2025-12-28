@@ -23,7 +23,6 @@ export default function ProductPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState<string>("");
 
@@ -35,10 +34,18 @@ export default function ProductPage() {
         setProduct(productData);
 
         if (productData) {
-          if (productData.sizes.length > 0) setSelectedSize(productData.sizes[0].size);
-          if (productData.colors.length > 0) setSelectedColor(productData.colors[0].color_name);
-          if (productData.images.length > 0) setActiveImage(productData.images[0].image_url);
+          // Auto-select first available size
+          if (productData.sizes && productData.sizes.length > 0) {
+            const firstAvailableSize = productData.sizes.find(s => s.stock > 0)?.size || productData.sizes[0].size;
+            setSelectedSize(firstAvailableSize);
+          }
 
+          // Set first image as active
+          if (productData.images && productData.images.length > 0) {
+            setActiveImage(productData.images[0].image_url);
+          }
+
+          // Load related products
           const related = await getProducts({ category: productData.category || undefined });
           setRelatedProducts(related.filter(p => p.id !== productData.id).slice(0, 4));
         }
@@ -52,18 +59,35 @@ export default function ProductPage() {
     loadData();
   }, [slug]);
 
+  // Derive current stock for selected size
+  const currentSizeObj = product?.sizes?.find(s => s.size === selectedSize);
+  const currentStock = currentSizeObj ? currentSizeObj.stock : 0;
+  const isOutOfStock = currentStock <= 0;
+
+  const handleQuantityChange = (delta: number) => {
+    setQuantity(prev => {
+      const newVal = prev + delta;
+      if (newVal < 1) return 1;
+      if (newVal > currentStock) {
+        toast.error(`Only ${currentStock} items available in this size`);
+        return currentStock;
+      }
+      return newVal;
+    });
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
-    if (!selectedSize && product.sizes.length > 0) {
+    if (isOutOfStock) {
+      toast.error("This size is out of stock.");
+      return;
+    }
+    if (!selectedSize) {
       toast.error("Please select a size");
       return;
     }
-    if (!selectedColor && product.colors.length > 0) {
-      toast.error("Please select a color");
-      return;
-    }
 
-    CartService.addToCart(product, quantity, selectedSize, selectedColor);
+    CartService.addToCart(product, quantity, selectedSize, 'Default');
     toast.success("Added to bag");
   };
 
@@ -87,10 +111,6 @@ export default function ProductPage() {
     );
   }
 
-  const discount = product.original_price
-    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
-    : 0;
-
   return (
     <MainLayout>
       <div className="bg-white min-h-screen pb-20 pt-16">
@@ -110,10 +130,10 @@ export default function ProductPage() {
 
             <div className="lg:grid lg:grid-cols-12 gap-6 lg:gap-8">
 
-              {/* Left Column: Image Gallery (Thumbnail + Main) */}
+              {/* Left Column: Image Gallery */}
               <div className="lg:col-span-7 mb-10 lg:mb-0">
                 <div className="flex flex-col-reverse lg:flex-row gap-6">
-                  {/* Thumbnails (Left on Desktop, Bottom on Mobile) */}
+                  {/* Thumbnails */}
                   <div className="flex lg:flex-col gap-4 overflow-x-auto lg:overflow-visible lg:w-[120px] shrink-0 no-scrollbar">
                     {product.images.map((image, index) => (
                       <button
@@ -144,10 +164,8 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Right Column: Product Info (Sticky) */}
+              {/* Right Column: Product Info */}
               <div className="lg:col-span-5 lg:self-start lg:sticky lg:top-32">
-
-                {/* Header */}
                 <div className="mb-5">
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-medium text-black mb-3 leading-tight">
                     {product.name}
@@ -156,73 +174,40 @@ export default function ProductPage() {
                     <p className="text-2xl font-light text-gray-900">
                       ₹{product.price.toLocaleString()}
                     </p>
-                    {/* Kept minimal, no badges */}
                   </div>
                 </div>
 
-                {/* Description */}
                 <div className="mb-8 text-gray-600 text-sm leading-relaxed font-light">
                   <p>{product.description || product.full_description}</p>
                 </div>
 
-                {/* Selectors and Actions */}
                 <form onSubmit={(e) => { e.preventDefault(); handleAddToCart(); }}>
 
-                  {/* Colors - Minimal Circles */}
-                  {product.colors.length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-3">Color: <span className="text-gray-500 font-normal ml-1">{selectedColor}</span></h3>
-                      <div className="flex items-center gap-4">
-                        {product.colors.map((color) => (
-                          <label
-                            key={color.color_name}
-                            className={classNames(
-                              'relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-none transition-all duration-300',
-                              selectedColor === color.color_name
-                                ? 'ring-1 ring-black ring-offset-2 scale-110'
-                                : 'hover:scale-110'
-                            )}
-                          >
-                            <input
-                              type="radio"
-                              name="color"
-                              value={color.color_name}
-                              checked={selectedColor === color.color_name}
-                              onChange={() => setSelectedColor(color.color_name)}
-                              className="sr-only"
-                            />
-                            <span
-                              className="h-8 w-8 rounded-full border border-black/10"
-                              style={{ backgroundColor: color.color_hex }}
-                            />
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Sizes - Clean Text Buttons */}
+                  {/* Sizes */}
                   {product.sizes.length > 0 && (
                     <div className="mb-8">
                       <div className="flex justify-between items-center mb-3">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900">Size</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900">
+                          Size {currentStock < 5 && currentStock > 0 && <span className="text-red-600 normal-case ml-2 rounded bg-red-50 px-2 py-0.5 text-[10px]">Only {currentStock} left!</span>}
+                        </h3>
                         <a href="#" className="text-xs text-gray-400 hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Size Guide</a>
                       </div>
 
                       <div className="grid grid-cols-4 gap-2">
                         {product.sizes.map((size) => {
-                          const inStock = product.stock > 0;
+                          const stockCount = size.stock;
+                          const hasStock = stockCount > 0;
                           const isSelected = selectedSize === size.size;
 
                           return (
                             <label
                               key={size.size}
                               className={classNames(
-                                inStock
+                                hasStock
                                   ? 'cursor-pointer'
-                                  : 'cursor-not-allowed opacity-50',
+                                  : 'cursor-not-allowed opacity-40 bg-gray-50',
                                 'group relative flex items-center justify-center border transition-all duration-200 py-3 text-xs font-medium uppercase',
-                                isSelected && inStock
+                                isSelected && hasStock
                                   ? 'border-black bg-black text-white'
                                   : 'border-gray-200 bg-white text-gray-900 hover:border-gray-900'
                               )}
@@ -231,15 +216,18 @@ export default function ProductPage() {
                                 type="radio"
                                 name="size"
                                 value={size.size}
-                                disabled={!inStock}
+                                disabled={!hasStock}
                                 checked={isSelected}
-                                onChange={() => setSelectedSize(size.size)}
+                                onChange={() => {
+                                  setSelectedSize(size.size);
+                                  setQuantity(1); // Reset quantity when size changes
+                                }}
                                 className="sr-only"
                               />
                               <span>{size.size}</span>
-                              {!inStock && (
+                              {!hasStock && (
                                 <span className="absolute inset-0 flex items-center justify-center">
-                                  <div className="w-full h-[1px] bg-gray-300 -rotate-45 transform"></div>
+                                  <div className="w-[120%] h-[1px] bg-gray-400 -rotate-45 transform"></div>
                                 </span>
                               )}
                             </label>
@@ -249,11 +237,41 @@ export default function ProductPage() {
                     </div>
                   )}
 
+                  {/* Quantity Selector (New) */}
+                  {!isOutOfStock && (
+                    <div className="mb-8">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-3">Quantity</h3>
+                      <div className="flex items-center border border-gray-300 w-32">
+                        <button
+                          type="button"
+                          onClick={() => handleQuantityChange(-1)}
+                          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors"
+                          disabled={quantity <= 1}
+                        >
+                          -
+                        </button>
+                        <div className="flex-1 text-center text-sm font-medium">{quantity}</div>
+                        <button
+                          type="button"
+                          onClick={() => handleQuantityChange(1)}
+                          className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors"
+                          disabled={quantity >= currentStock}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center bg-black text-white px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-gray-800 transition-colors duration-300"
+                    disabled={isOutOfStock}
+                    className={`w-full flex items-center justify-center px-8 py-4 text-sm uppercase tracking-widest font-medium transition-colors duration-300 ${isOutOfStock
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-black text-white hover:bg-gray-800'
+                      }`}
                   >
-                    Add to Bag — ₹{product.price.toLocaleString()}
+                    {isOutOfStock ? "Out of Stock" : `Add to Bag — ₹${(product.price * quantity).toLocaleString()}`}
                   </button>
 
                   <p className="mt-4 text-center text-xs text-gray-500 font-light">
@@ -261,7 +279,6 @@ export default function ProductPage() {
                   </p>
                 </form>
 
-                {/* Additional Details Accordion-style (Simplified list for now to look cleaner) */}
                 <div className="mt-8 border-t border-gray-100 pt-6 space-y-5">
                   {product.specifications.length > 0 && (
                     <div>
@@ -273,7 +290,6 @@ export default function ProductPage() {
                       </ul>
                     </div>
                   )}
-
                   {product.full_description && (
                     <div>
                       <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-3">Details</h3>

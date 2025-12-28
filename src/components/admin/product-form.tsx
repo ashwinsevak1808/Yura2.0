@@ -6,7 +6,7 @@ import { AdminService } from "@/services/admin.service";
 import { Button } from "@/components/ui/button";
 import { useDialog } from "@/context/dialog-context";
 import { Input } from "@/components/ui/input";
-import { Plus, X, Upload, Trash2, ChevronDown } from "lucide-react";
+import { Plus, X, Upload, Trash2, ChevronDown, Info } from "lucide-react";
 
 interface ProductFormProps {
     initialData?: any;
@@ -17,6 +17,8 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
     const router = useRouter();
     const { showError } = useDialog();
     const [loading, setLoading] = useState(false);
+
+    // Basic product info
     const [formData, setFormData] = useState({
         name: "",
         slug: "",
@@ -25,13 +27,30 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
         price: "",
         original_price: "",
         category: "Anarkali",
-        stock: "10",
     });
-    const [sizes, setSizes] = useState<string[]>(["S", "M", "L", "XL"]);
-    const [isActive, setIsActive] = useState(true);
-    const [colors, setColors] = useState<{ name: string; hex: string }[]>([
-        { name: "Red", hex: "#FF0000" },
+
+    // Size-based stock (each size has its own stock)
+    const [sizeStock, setSizeStock] = useState<{ size: string; stock: number }[]>([
+        { size: "S", stock: 10 },
+        { size: "M", stock: 10 },
+        { size: "L", stock: 10 },
+        { size: "XL", stock: 10 },
     ]);
+
+    // SEO Metadata
+    const [seoData, setSeoData] = useState({
+        meta_title: "",
+        meta_description: "",
+        meta_keywords: "",
+        og_image: "",
+        og_title: "",
+        og_description: "",
+        twitter_title: "",
+        twitter_description: "",
+        twitter_image: "",
+    });
+
+    const [isActive, setIsActive] = useState(true);
     const [images, setImages] = useState<File[]>([]);
     const [existingImages, setExistingImages] = useState<any[]>([]);
 
@@ -45,20 +64,29 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
                 price: initialData.price?.toString() || "",
                 original_price: initialData.original_price?.toString() || "",
                 category: initialData.category || "Anarkali",
-                stock: initialData.stock?.toString() || "0",
             });
             setIsActive(initialData.is_active ?? true);
 
+            // Load size-based stock
             if (initialData.sizes && initialData.sizes.length > 0) {
-                setSizes(initialData.sizes.map((s: any) => s.size || s));
-            }
-
-            if (initialData.colors && initialData.colors.length > 0) {
-                setColors(initialData.colors.map((c: any) => ({
-                    name: c.color_name || c.name,
-                    hex: c.color_hex || c.hex
+                setSizeStock(initialData.sizes.map((s: any) => ({
+                    size: s.size || s,
+                    stock: s.stock || 0
                 })));
             }
+
+            // Load SEO data
+            setSeoData({
+                meta_title: initialData.meta_title || "",
+                meta_description: initialData.meta_description || "",
+                meta_keywords: initialData.meta_keywords || "",
+                og_image: initialData.og_image || "",
+                og_title: initialData.og_title || "",
+                og_description: initialData.og_description || "",
+                twitter_title: initialData.twitter_title || "",
+                twitter_description: initialData.twitter_description || "",
+                twitter_image: initialData.twitter_image || "",
+            });
 
             if (initialData.images && initialData.images.length > 0) {
                 setExistingImages(initialData.images);
@@ -75,6 +103,11 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
         }
     };
 
+    const handleSeoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setSeoData((prev) => ({ ...prev, [name]: value }));
+    };
+
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setImages((prev) => [...prev, ...Array.from(e.target.files!)]);
@@ -89,18 +122,20 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
         setExistingImages((prev) => prev.filter((img) => img.id !== id));
     };
 
-    const addColor = () => {
-        setColors([...colors, { name: "", hex: "#000000" }]);
+
+
+    const addSize = () => {
+        setSizeStock([...sizeStock, { size: "", stock: 10 }]);
     };
 
-    const updateColor = (index: number, field: "name" | "hex", value: string) => {
-        const newColors = [...colors];
-        newColors[index] = { ...newColors[index], [field]: value };
-        setColors(newColors);
+    const updateSizeStock = (index: number, field: "size" | "stock", value: string | number) => {
+        const newSizeStock = [...sizeStock];
+        newSizeStock[index] = { ...newSizeStock[index], [field]: value };
+        setSizeStock(newSizeStock);
     };
 
-    const removeColor = (index: number) => {
-        setColors(colors.filter((_, i) => i !== index));
+    const removeSize = (index: number) => {
+        setSizeStock(sizeStock.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -116,14 +151,17 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
                 );
             }
 
+            // Calculate total inventory
+            const totalInventory = sizeStock.reduce((sum, item) => sum + item.stock, 0);
+
             const productData = {
                 ...formData,
+                ...seoData,
                 price: Number(formData.price),
                 original_price: formData.original_price ? Number(formData.original_price) : null,
-                stock: Number(formData.stock),
+                stock: totalInventory, // This will be mapped to 'inventory' in admin service
                 is_active: isActive,
-                sizes,
-                colors,
+                sizes: sizeStock.map(s => ({ size: s.size, stock: s.stock })),
                 newImages: newImageUrls.map((url, index) => ({
                     image_url: url,
                     is_primary: index === 0 && existingImages.length === 0
@@ -249,7 +287,7 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
                                     name="full_description"
                                     rows={8}
                                     className="block w-full border-gray-200 shadow-sm focus:border-black focus:ring-black sm:text-sm p-4 rounded-none resize-none bg-gray-50/30 focus:bg-white transition-colors"
-                                    value={(formData as any).full_description || ""}
+                                    value={formData.full_description}
                                     onChange={handleChange}
                                     placeholder="Detailed product information..."
                                 />
@@ -314,84 +352,151 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
                         <p className="text-xs text-gray-400">Recommended size: 1200x1600px. Formats: JPG, PNG, WEBP.</p>
                     </div>
 
-                    {/* Variants */}
+                    {/* Variants - Size & Stock */}
                     <div className="bg-white p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-shadow">
-                        <h2 className="text-xl font-serif font-medium text-black mb-6">Variants</h2>
+                        <h2 className="text-xl font-serif font-medium text-black mb-6">Sizes & Stock</h2>
 
-                        <div className="space-y-8">
-                            {/* Sizes */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-3">Available Sizes</label>
-                                <div className="flex flex-wrap gap-3">
-                                    {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
-                                        <button
-                                            key={size}
-                                            type="button"
-                                            onClick={() => {
-                                                if (sizes.includes(size)) {
-                                                    setSizes(sizes.filter((s) => s !== size));
-                                                } else {
-                                                    setSizes([...sizes, size]);
-                                                }
-                                            }}
-                                            className={`w-12 h-12 flex items-center justify-center text-sm font-medium border transition-all ${sizes.includes(size)
-                                                ? "bg-black text-white border-black"
-                                                : "bg-white text-gray-400 border-gray-200 hover:border-gray-400 hover:text-gray-600"
-                                                }`}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Colors */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-3">Available Colors</label>
-                                <div className="space-y-3">
-                                    {colors.map((color, index) => (
-                                        <div key={index} className="flex items-center gap-4 bg-gray-50 p-2 border border-gray-100 hover:border-gray-300 transition-colors">
-                                            <div className="relative">
-                                                <input
-                                                    type="color"
-                                                    value={color.hex}
-                                                    onChange={(e) => updateColor(index, "hex", e.target.value)}
-                                                    className="h-10 w-10 p-0.5 border-none cursor-pointer bg-transparent"
-                                                />
-                                            </div>
-                                            <input
-                                                type="text"
-                                                placeholder="Color Name (e.g. Navy Blue)"
-                                                value={color.name}
-                                                onChange={(e) => updateColor(index, "name", e.target.value)}
-                                                className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium placeholder-gray-400"
-                                            />
-                                            <div className="flex items-center border-l border-gray-200 pl-4">
-                                                <span className="text-gray-400 mr-1 text-xs font-mono">#</span>
-                                                <input
-                                                    type="text"
-                                                    value={color.hex.replace('#', '')}
-                                                    onChange={(e) => updateColor(index, "hex", '#' + e.target.value)}
-                                                    className="w-20 bg-transparent border-none focus:ring-0 text-xs text-gray-600 font-mono uppercase"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => removeColor(index)}
-                                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
+                        <div className="space-y-4">
+                            {sizeStock.map((item, index) => (
+                                <div key={index} className="flex items-center gap-4 bg-gray-50 p-4 border border-gray-100 hover:border-gray-300 transition-colors">
+                                    <div className="flex-1">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Size</label>
+                                        <input
+                                            type="text"
+                                            value={item.size}
+                                            onChange={(e) => updateSizeStock(index, "size", e.target.value)}
+                                            placeholder="e.g., S, M, L, XL"
+                                            className="w-full bg-white border border-gray-200 focus:border-black focus:ring-0 text-sm font-medium px-3 py-2 rounded-none"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Stock Quantity</label>
+                                        <input
+                                            type="number"
+                                            value={item.stock}
+                                            onChange={(e) => updateSizeStock(index, "stock", Number(e.target.value))}
+                                            min="0"
+                                            className="w-full bg-white border border-gray-200 focus:border-black focus:ring-0 text-sm font-mono px-3 py-2 rounded-none"
+                                        />
+                                    </div>
                                     <button
                                         type="button"
-                                        onClick={addColor}
-                                        className="mt-2 text-xs font-bold uppercase tracking-widest text-black hover:opacity-70 border-b border-black pb-0.5 inline-flex items-center"
+                                        onClick={() => removeSize(index)}
+                                        className="mt-5 p-2 text-gray-400 hover:text-red-500 transition-colors"
                                     >
-                                        <Plus className="w-3 h-3 mr-1" /> Add Another Color
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={addSize}
+                                className="mt-2 text-xs font-bold uppercase tracking-widest text-black hover:opacity-70 border-b border-black pb-0.5 inline-flex items-center"
+                            >
+                                <Plus className="w-3 h-3 mr-1" /> Add Another Size
+                            </button>
+                            <p className="text-xs text-gray-400 mt-4">
+                                <Info className="w-3 h-3 inline mr-1" />
+                                Total inventory will be calculated automatically from all sizes.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    {/* SEO Metadata */}
+                    <div className="bg-white p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-shadow">
+                        <h2 className="text-xl font-serif font-medium text-black mb-2">SEO & Social Sharing</h2>
+                        <p className="text-xs text-gray-500 mb-6">Optimize how your product appears in search engines and social media</p>
+
+                        <div className="space-y-6">
+                            {/* Basic SEO */}
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Basic SEO</h3>
+                                <Input
+                                    label="Meta Title"
+                                    name="meta_title"
+                                    value={seoData.meta_title}
+                                    onChange={handleSeoChange}
+                                    placeholder="e.g., Elegant Floral Kurti - Premium Cotton | YURA"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
+                                <div className="space-y-1">
+                                    <label className="block text-sm font-medium text-gray-700">Meta Description</label>
+                                    <textarea
+                                        name="meta_description"
+                                        value={seoData.meta_description}
+                                        onChange={handleSeoChange}
+                                        rows={3}
+                                        placeholder="Brief description for search results (max 160 chars)"
+                                        className="block w-full border-gray-200 shadow-sm focus:border-black focus:ring-black sm:text-sm p-4 rounded-none resize-none"
+                                    />
+                                </div>
+                                <Input
+                                    label="Meta Keywords"
+                                    name="meta_keywords"
+                                    value={seoData.meta_keywords}
+                                    onChange={handleSeoChange}
+                                    placeholder="kurti, ethnic wear, cotton kurti"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
+                            </div>
+
+                            {/* Open Graph */}
+                            <div className="space-y-4 pt-6 border-t border-gray-100">
+                                <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Open Graph (Facebook, LinkedIn)</h3>
+                                <Input
+                                    label="OG Title"
+                                    name="og_title"
+                                    value={seoData.og_title}
+                                    onChange={handleSeoChange}
+                                    placeholder="Title when shared on social media"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
+                                <Input
+                                    label="OG Description"
+                                    name="og_description"
+                                    value={seoData.og_description}
+                                    onChange={handleSeoChange}
+                                    placeholder="Description when shared"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
+                                <Input
+                                    label="OG Image URL"
+                                    name="og_image"
+                                    value={seoData.og_image}
+                                    onChange={handleSeoChange}
+                                    placeholder="https://example.com/image.jpg"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
+                            </div>
+
+                            {/* Twitter */}
+                            <div className="space-y-4 pt-6 border-t border-gray-100">
+                                <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Twitter Card</h3>
+                                <Input
+                                    label="Twitter Title"
+                                    name="twitter_title"
+                                    value={seoData.twitter_title}
+                                    onChange={handleSeoChange}
+                                    placeholder="Title for Twitter"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
+                                <Input
+                                    label="Twitter Description"
+                                    name="twitter_description"
+                                    value={seoData.twitter_description}
+                                    onChange={handleSeoChange}
+                                    placeholder="Description for Twitter"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
+                                <Input
+                                    label="Twitter Image URL"
+                                    name="twitter_image"
+                                    value={seoData.twitter_image}
+                                    onChange={handleSeoChange}
+                                    placeholder="https://example.com/twitter-image.jpg"
+                                    className="border-gray-200 focus:border-black rounded-none"
+                                />
                             </div>
                         </div>
                     </div>
@@ -423,20 +528,21 @@ export function ProductForm({ initialData, isEditMode = false }: ProductFormProp
                         </div>
                     </div>
 
-                    {/* Inventory */}
+                    {/* Inventory Summary */}
                     <div className="bg-white p-6 border border-gray-100 shadow-sm group hover:shadow-md transition-shadow">
-                        <h2 className="text-lg font-serif font-medium text-black mb-6">Inventory</h2>
-                        <Input
-                            label="Stock Quantity"
-                            name="stock"
-                            type="number"
-                            value={formData.stock}
-                            onChange={handleChange}
-                            required
-                            className="border-gray-200 focus:border-black rounded-none font-mono"
-                        />
+                        <h2 className="text-lg font-serif font-medium text-black mb-4">Inventory Summary</h2>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Total Stock:</span>
+                                <span className="font-mono font-bold">{sizeStock.reduce((sum, item) => sum + item.stock, 0)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Sizes:</span>
+                                <span className="font-mono">{sizeStock.length}</span>
+                            </div>
+                        </div>
                         <p className="mt-4 text-xs text-gray-400">
-                            Managed automatically via orders. Manually adjusting this value will override current stock levels.
+                            Stock is managed per size. Total inventory is calculated automatically.
                         </p>
                     </div>
 

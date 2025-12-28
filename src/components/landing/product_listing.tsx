@@ -15,6 +15,10 @@ export default function ProductGridSection({ products }: ProductGridSectionProps
     ? products
     : products.filter(product => product.category === selectedCategory);
 
+  // Limit to 4 products for Featured Pieces section
+  const displayedProducts = filteredProducts.slice(0, 4);
+  const totalProductCount = products.length;
+
   return (
     <section className="py-16 sm:py-20 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,15 +35,15 @@ export default function ProductGridSection({ products }: ProductGridSectionProps
           </p>
         </div>
 
-        {/* Category Filter - With Better Spacing */}
+        {/* Category Filter - Only show real categories with products */}
         <div className="flex flex-wrap gap-6 mb-12">
-          {["All", ...Array.from(new Set(products.map((product) => product.category))).filter((c): c is string => typeof c === "string" && c !== "")].map((category) => (
+          {["All", ...Array.from(new Set(products.map((product) => product.category))).filter((c): c is string => typeof c === "string" && c !== "" && c !== null && c !== undefined)].map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={`text-sm transition-all ${selectedCategory === category
-                  ? "text-black font-medium border-b-2 border-black pb-1"
-                  : "text-gray-500 hover:text-black font-light pb-1"
+                ? "text-black font-medium border-b-2 border-black pb-1"
+                : "text-gray-500 hover:text-black font-light pb-1"
                 }`}
             >
               {category}
@@ -47,9 +51,9 @@ export default function ProductGridSection({ products }: ProductGridSectionProps
           ))}
         </div>
 
-        {/* Product Grid */}
+        {/* Product Grid - Limited to 4 items */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
-          {filteredProducts.map((product) => {
+          {displayedProducts.map((product) => {
             const primaryImage = product.images.find(img => img.is_primary) || product.images[0];
             return (
               <a
@@ -92,13 +96,13 @@ export default function ProductGridSection({ products }: ProductGridSectionProps
           })}
         </div>
 
-        {/* View All Button */}
+        {/* View All Button with Product Count */}
         <div className="mt-16 md:mt-20 text-center">
           <a
             href="/collections"
             className="inline-block text-xs font-bold uppercase tracking-widest border-b-2 border-black pb-2 hover:opacity-70 transition-opacity"
           >
-            View All Collection
+            View Collection ({totalProductCount})
           </a>
         </div>
       </div>

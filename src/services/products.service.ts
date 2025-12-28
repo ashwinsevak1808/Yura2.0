@@ -6,8 +6,7 @@ export async function getAllProducts(): Promise<Product[]> {
     .from('products')
     .select(`
   *,
-  product_sizes(size),
-  product_colors(color_name, color_hex, in_stock),
+  product_sizes(size, stock),
   product_images(image_url, is_primary),
   product_specifications(spec_name, spec_value),
   product_reviews_meta(rating, review_count)
@@ -24,7 +23,7 @@ export async function getAllProducts(): Promise<Product[]> {
   return data.map((product: any) => ({
     ...product,
     sizes: product.product_sizes,
-    colors: product.product_colors,
+    colors: [], // Colors deprecated
     images: product.product_images,
     specifications: product.product_specifications,
     reviews: product.product_reviews_meta?.[0] ?? null
@@ -36,8 +35,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     .from('products')
     .select(`
   *,
-  product_sizes(size),
-  product_colors(color_name, color_hex, in_stock),
+  product_sizes(size, stock),
   product_images(image_url, is_primary),
   product_specifications(spec_name, spec_value),
   product_reviews_meta(rating, review_count)
@@ -53,7 +51,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return {
     ...data,
     sizes: data.product_sizes,
-    colors: data.product_colors,
+    colors: [], // Colors deprecated
     images: data.product_images,
     specifications: data.product_specifications,
     reviews: data.product_reviews_meta?.[0] ?? null
@@ -75,8 +73,7 @@ export async function getProducts(filters: ProductFilters = {}): Promise<Product
     .from('products')
     .select(`
   *,
-  product_sizes(size),
-  product_colors(color_name, color_hex, in_stock),
+  product_sizes(size, stock),
   product_images(image_url, is_primary),
   product_specifications(spec_name, spec_value),
   product_reviews_meta(rating, review_count)
@@ -96,14 +93,8 @@ export async function getProducts(filters: ProductFilters = {}): Promise<Product
   }
 
   if (filters.search) {
-    query = query.ilike('name', `% ${filters.search}% `);
+    query = query.ilike('name', `%${filters.search}%`);
   }
-
-  // Note: Filtering by related tables (sizes/colors) is complex in Supabase JS client directly 
-  // without using !inner joins which can filter out the parent row. 
-  // For simplicity in this demo, we'll fetch more and filter in memory if needed, 
-  // or rely on the fact that we are filtering main product attributes.
-  // A robust solution would use an RPC function or more complex query.
 
   if (filters.sort) {
     switch (filters.sort) {
@@ -132,24 +123,20 @@ export async function getProducts(filters: ProductFilters = {}): Promise<Product
   let products = data.map((product: any) => ({
     ...product,
     sizes: product.product_sizes,
-    colors: product.product_colors,
+    colors: [], // Colors deprecated
     images: product.product_images,
     specifications: product.product_specifications,
     reviews: product.product_reviews_meta?.[0] ?? null
   }));
 
-  // In-memory filtering for array relationships (sizes/colors) if strict filtering is needed
+  // In-memory filtering for array relationships (sizes)
   if (filters.sizes && filters.sizes.length > 0) {
     products = products.filter((p: Product) =>
       p.sizes.some(s => filters.sizes?.includes(s.size))
     );
   }
 
-  if (filters.colors && filters.colors.length > 0) {
-    products = products.filter((p: Product) =>
-      p.colors.some(c => filters.colors?.includes(c.color_name))
-    );
-  }
+  // Remove color filtering logic as colors are gone
 
   return products;
 }

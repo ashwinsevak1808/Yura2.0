@@ -162,7 +162,7 @@ export default function AdminProductsPage() {
                                     <h3 className="font-medium text-gray-900 truncate">{product.name}</h3>
                                     <div className="mt-1 flex items-center justify-between">
                                         <p className="font-mono text-sm text-gray-500">₹{product.price}</p>
-                                        <p className="text-xs text-gray-400 font-mono">Stock: {product.stock}</p>
+                                        <p className="text-xs text-gray-400 font-mono">Stock: {product.inventory}</p>
                                     </div>
                                 </div>
                             </div>
@@ -214,7 +214,7 @@ export default function AdminProductsPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 font-mono">
-                                            {product.stock}
+                                            {product.inventory}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 font-mono">
                                             ₹{product.price}

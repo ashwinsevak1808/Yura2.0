@@ -27,8 +27,8 @@ export default function PremiumKurtiHeader() {
 
   return (
     <div className="fixed w-full z-50">
-      {/* Subtle Top Banner */}
-      <div className="bg-gray-900 text-white border-b border-gray-800 overflow-hidden relative h-[32px]">
+      {/* Clickable Top Banner - Redirects to collections */}
+      <a href="/collections?offer=launch" className="block bg-gray-900 text-white border-b border-gray-800 overflow-hidden relative h-[32px] cursor-pointer hover:bg-gray-800 transition-colors">
         <div className="absolute top-0 left-0 w-full h-full flex items-center overflow-hidden">
           <div className="flex whitespace-nowrap animate-marquee">
             {[...Array(10)].map((_, i) => (
@@ -40,7 +40,7 @@ export default function PremiumKurtiHeader() {
             ))}
           </div>
         </div>
-      </div>
+      </a>
 
       {/* Main Header */}
       <header
@@ -51,10 +51,10 @@ export default function PremiumKurtiHeader() {
       >
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+            {/* Logo - Updated to YURAA */}
             <a href="/" className="flex items-center group">
               <span className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 transition-opacity duration-300 group-hover:opacity-70">
-                YURA
+                YURAA
               </span>
             </a>
 

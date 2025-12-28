@@ -6,6 +6,7 @@ import { MainLayout } from "@/components/layout/main_layout";
 import { CartService } from "@/services/cart.service";
 import { CartItem } from "@/types/cart";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -50,9 +51,15 @@ export default function CartPage() {
       <div className="bg-gray-50 min-h-screen pb-20 pt-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-32">
 
+          {/* Breadcrumb */}
+          <Breadcrumb items={[
+            { label: 'Home', href: '/' },
+            { label: 'Shopping Bag' }
+          ]} />
+
           {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium text-black mb-2 leading-tight">
+          <div className="mb-8 md:mb-12">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-medium text-black mb-2 leading-tight">
               Shopping Bag
             </h1>
             <p className="text-sm text-gray-500 font-light">
@@ -85,8 +92,8 @@ export default function CartPage() {
                       className="bg-white p-6 flex gap-6"
                     >
 
-                      {/* Product Image - Larger */}
-                      <div className="flex-shrink-0 w-40 h-52 bg-gray-50">
+                      {/* Product Image - Responsive sizing */}
+                      <div className="flex-shrink-0 w-24 h-32 sm:w-32 sm:h-40 md:w-40 md:h-52 bg-gray-50">
                         <a href={`/product/${item.slug}`}>
                           <ImageWithFallback
                             src={primaryImage?.image_url}
@@ -103,7 +110,7 @@ export default function CartPage() {
                         <div className="flex justify-between gap-4 mb-4">
                           <div className="flex-1">
                             <a href={`/product/${item.slug}`}>
-                              <h3 className="font-serif text-2xl text-black mb-3 hover:opacity-70 transition-opacity">
+                              <h3 className="font-serif text-lg sm:text-xl md:text-2xl text-black mb-2 sm:mb-3 hover:opacity-70 transition-opacity">
                                 {item.name}
                               </h3>
                             </a>
@@ -131,11 +138,11 @@ export default function CartPage() {
                           </button>
                         </div>
 
-                        {/* Bottom Section - Price and Quantity */}
-                        <div className="mt-auto flex items-end justify-between">
+                        {/* Bottom Section - Price and Quantity - Responsive layout */}
+                        <div className="mt-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
                           <div>
                             <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Price</p>
-                            <p className="text-xl font-light text-black">
+                            <p className="text-lg sm:text-xl font-light text-black">
                               ₹{item.price.toLocaleString()}
                             </p>
                           </div>
