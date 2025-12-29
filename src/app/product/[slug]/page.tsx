@@ -166,15 +166,62 @@ export default function ProductPage() {
 
               {/* Right Column: Product Info */}
               <div className="lg:col-span-5 lg:self-start lg:sticky lg:top-32">
-                <div className="mb-5">
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-medium text-black mb-3 leading-tight">
+                <div className="flex items-center justify-between mb-3">
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-medium text-black leading-tight">
                     {product.name}
                   </h1>
-                  <div className="flex items-baseline gap-4">
-                    <p className="text-2xl font-light text-gray-900">
-                      ₹{product.price.toLocaleString()}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => {
+                      const url = window.location.href;
+                      const title = product.meta_title || product.name || "YURA";
+                      const text = product.meta_description || product.description || `Check out ${product.name}`;
+
+                      if (navigator.share) {
+                        navigator.share({ title, text, url }).catch(console.error);
+                        return;
+                      }
+
+                      // Robust Clipboard Logic with Fallback for non-secure contexts
+                      const copyToClipboard = (text: string) => {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                          navigator.clipboard.writeText(text)
+                            .then(() => toast.success("Link copied to clipboard"))
+                            .catch(() => copyFallback(text));
+                        } else {
+                          copyFallback(text);
+                        }
+                      };
+
+                      const copyFallback = (text: string) => {
+                        try {
+                          const textArea = document.createElement("textarea");
+                          textArea.value = text;
+                          textArea.style.position = "fixed"; // prevent scrolling
+                          document.body.appendChild(textArea);
+                          textArea.focus();
+                          textArea.select();
+                          const successful = document.execCommand('copy');
+                          document.body.removeChild(textArea);
+                          if (successful) toast.success("Link copied to clipboard");
+                          else toast.error("Your browser does not support sharing");
+                        } catch (err) {
+                          console.error('Fallback copy failed', err);
+                          toast.error("Could not copy link");
+                        }
+                      };
+
+                      copyToClipboard(url);
+                    }}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Share product"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-share-2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /><line x1="15.41" x2="8.59" y1="6.51" y2="10.49" /></svg>
+                  </button>
+                </div>
+                <div className="flex items-baseline gap-4">
+                  <p className="text-2xl font-light text-gray-900">
+                    ₹{product.price.toLocaleString()}
+                  </p>
                 </div>
 
                 <div className="mb-8 text-gray-600 text-sm leading-relaxed font-light">
@@ -190,7 +237,7 @@ export default function ProductPage() {
                         <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900">
                           Size {currentStock < 5 && currentStock > 0 && <span className="text-red-600 normal-case ml-2 rounded bg-red-50 px-2 py-0.5 text-[10px]">Only {currentStock} left!</span>}
                         </h3>
-                        <a href="#" className="text-xs text-gray-400 hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Size Guide</a>
+                        <a href="/information/size-guide" className="text-xs text-gray-400 hover:text-black transition-colors underline decoration-gray-300 underline-offset-4">Size Guide</a>
                       </div>
 
                       <div className="grid grid-cols-4 gap-2">
@@ -255,7 +302,6 @@ export default function ProductPage() {
                           type="button"
                           onClick={() => handleQuantityChange(1)}
                           className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition-colors"
-                          disabled={quantity >= currentStock}
                         >
                           +
                         </button>
@@ -267,8 +313,8 @@ export default function ProductPage() {
                     type="submit"
                     disabled={isOutOfStock}
                     className={`w-full flex items-center justify-center px-8 py-4 text-sm uppercase tracking-widest font-medium transition-colors duration-300 ${isOutOfStock
-                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : 'bg-black text-white hover:bg-gray-800'
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-black text-white hover:bg-gray-800'
                       }`}
                   >
                     {isOutOfStock ? "Out of Stock" : `Add to Bag — ₹${(product.price * quantity).toLocaleString()}`}

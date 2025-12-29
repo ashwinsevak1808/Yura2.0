@@ -453,8 +453,37 @@ export const AdminService = {
             if (imagesError) throw imagesError;
         }
 
-        // Ideally we would sync sizes/colors too, but that requires diffing or delete-reinsert
-        // leaving strictly as product update for now per requirements
+        // 3. Sync Sizes (Delete and Re-insert strategy)
+        if (productData.sizes) {
+            // A. Delete existing sizes
+            const { error: deleteError } = await supabase
+                .from("product_sizes")
+                .delete()
+                .eq("product_id", id);
+
+            if (deleteError) {
+                console.error("Error clearing old sizes:", deleteError);
+                throw deleteError;
+            }
+
+            // B. Insert new sizes
+            if (productData.sizes.length > 0) {
+                const sizesToInsert = productData.sizes.map((sizeItem: any) => ({
+                    product_id: id,
+                    size: sizeItem.size,
+                    stock: sizeItem.stock
+                }));
+
+                const { error: insertError } = await supabase
+                    .from("product_sizes")
+                    .insert(sizesToInsert);
+
+                if (insertError) {
+                    console.error("Error inserting new sizes:", insertError);
+                    throw insertError;
+                }
+            }
+        }
 
         return { success: true };
     },
