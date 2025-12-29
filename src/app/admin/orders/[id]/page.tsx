@@ -101,7 +101,7 @@ export default function OrderDetailsPage() {
                             <select
                                 value={order.status}
                                 onChange={async (e) => {
-                                    const newStatus = e.target.value;
+                                    const newStatus = e.target.value as Order['status'];
                                     try {
                                         setLoading(true);
                                         await AdminService.updateOrderStatus(order.id, newStatus);
@@ -176,7 +176,7 @@ export default function OrderDetailsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50 bg-white print:divide-gray-200">
-                            {order.order_items?.map((item: any) => {
+                            {(order as any).order_items?.map((item: any) => {
                                 const product = item.product;
                                 return (
                                     <tr key={item.id} className="group">

@@ -93,8 +93,7 @@ export interface Order {
     cancelled_at?: string;
     cancellation_reason?: string;
 
-    // Integration
-    notion_page_id?: string;
+
 
     // Notes & Metadata
     admin_notes?: string;

@@ -7,6 +7,7 @@ import { CartService } from "@/services/cart.service";
 import { CartItem } from "@/types/cart";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { toast } from "@/components/ui/toast";
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -24,7 +25,19 @@ export default function CartPage() {
     return () => unsubscribe();
   }, []);
 
+
   const updateQuantity = (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    // Check stock limit
+    const sizeData = item.sizes.find(s => s.size === item.selectedSize);
+    const maxStock = sizeData ? sizeData.stock : item.inventory; // Fallback to total inventory if size specific not found
+
+    if (newQuantity > maxStock) {
+      toast.error(`Sorry, only ${maxStock} items available in this size.`);
+      return;
+    }
+
     CartService.updateQuantity(item.id, item.selectedSize, item.selectedColor, newQuantity);
   };
 

@@ -3,7 +3,7 @@
 import { supabase } from "@/utils/supabse/server";
 import { OrderData } from "@/types";
 import { EmailService } from "@/services/email.service";
-import { NotionService } from "@/services/notion.service";
+
 
 export async function submitOrderAction(orderData: OrderData) {
     try {
@@ -77,10 +77,7 @@ export async function submitOrderAction(orderData: OrderData) {
         // 3. Send Email Confirmation
         await EmailService.sendOrderConfirmation(order.id, orderData);
 
-        // 4. Sync to Notion (don't wait for it, run in background)
-        NotionService.createOrder(order).catch((error) => {
-            console.error("Notion sync failed (non-critical):", error);
-        });
+
 
         return { success: true, orderId: order.id, order };
     } catch (error) {
