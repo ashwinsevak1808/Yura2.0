@@ -12,12 +12,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!product) {
     return {
-      title: "Product Not Found | Yura",
+      title: "Product Not Found",
     };
   }
 
   return {
-    title: product.meta_title || `${product.name} | Yura`,
+    title: product.meta_title || product.name,
     description: product.meta_description || product.description,
     openGraph: {
       title: product.og_title || product.meta_title || product.name,

@@ -1,5 +1,11 @@
 import { MainLayout } from '@/components/layout/main_layout';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Shipping and Delivery',
+};
+
 export default function ShippingDeliveryPage() {
     return (
         <MainLayout>
@@ -40,7 +46,7 @@ export default function ShippingDeliveryPage() {
                             </p>
 
                             <p className="text-gray-600 font-light leading-relaxed">
-                                For any issues in utilizing our services you may contact our helpdesk on <a href="tel:8879963368" className="text-black font-medium hover:underline">8879963368</a> or <a href="mailto:yura.info.co@gmail.com" className="text-black font-medium hover:underline">yura.info.co@gmail.com</a>
+                                For any issues in utilizing our services you may contact our helpdesk on <a href="tel:8879963368" className="text-black font-medium hover:underline">8879963368</a> or <a href="mailto:info.yura.co@gmail.com" className="text-black font-medium hover:underline">info.yura.co@gmail.com</a>
                             </p>
                         </div>
 
@@ -84,8 +90,8 @@ export default function ShippingDeliveryPage() {
                             <div className="space-y-2 text-gray-600 font-light">
                                 <p>
                                     <strong className="font-medium text-black">Email:</strong>{' '}
-                                    <a href="mailto:yura.info.co@gmail.com" className="text-black hover:underline">
-                                        yura.info.co@gmail.com
+                                    <a href="mailto:info.yura.co@gmail.com" className="text-black hover:underline">
+                                        info.yura.co@gmail.com
                                     </a>
                                 </p>
                                 <p>

@@ -6,6 +6,8 @@ import { ChevronDown, Search, Filter } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 
+import { Pagination } from "@/components/ui/pagination";
+
 export default function AdminOrdersPage() {
     const router = useRouter();
     const [orders, setOrders] = useState<any[]>([]);
@@ -13,9 +15,18 @@ export default function AdminOrdersPage() {
     const [filterStatus, setFilterStatus] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         loadOrders();
     }, []);
+
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterStatus, searchQuery]);
 
     async function loadOrders() {
         try {
@@ -28,8 +39,6 @@ export default function AdminOrdersPage() {
         }
     }
 
-
-
     const filteredOrders = orders.filter(order => {
         const matchesStatus = filterStatus === "All" || order.status === filterStatus.toLowerCase();
         const matchesSearch =
@@ -38,6 +47,13 @@ export default function AdminOrdersPage() {
             order.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesStatus && matchesSearch;
     });
+
+    // Calculate Pagination
+    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    const paginatedOrders = filteredOrders.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     if (loading) {
         return (
@@ -110,7 +126,7 @@ export default function AdminOrdersPage() {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-50">
-                        {filteredOrders.map((order) => (
+                        {paginatedOrders.map((order) => (
                             <tr key={order.id} className="group hover:bg-gray-50 transition-colors">
                                 <td className="px-8 py-6 whitespace-nowrap text-sm font-medium text-black font-mono">
                                     #{order.id.slice(0, 8)}
@@ -151,6 +167,11 @@ export default function AdminOrdersPage() {
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             </div>
         </div>
     );

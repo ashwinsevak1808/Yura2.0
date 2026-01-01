@@ -1,5 +1,11 @@
 import { MainLayout } from "@/components/layout/main_layout";
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Our Story',
+};
+
 export default function OurStoryPage() {
     return (
         <MainLayout>

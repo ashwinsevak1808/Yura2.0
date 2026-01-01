@@ -125,8 +125,8 @@ function PaymentFailureContent() {
                         <div className="space-y-2 text-sm">
                             <p className="text-gray-600 font-light">
                                 <strong className="font-medium text-black">Email:</strong>{" "}
-                                <a href="mailto:yura.info.co@gmail.com" className="text-black hover:underline">
-                                    yura.info.co@gmail.com
+                                <a href="mailto:info.yura.co@gmail.com" className="text-black hover:underline">
+                                    info.yura.co@gmail.com
                                 </a>
                             </p>
                             <p className="text-gray-600 font-light">

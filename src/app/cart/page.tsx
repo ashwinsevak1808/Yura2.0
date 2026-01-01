@@ -45,9 +45,31 @@ export default function CartPage() {
     CartService.removeFromCart(item.id, item.selectedSize, item.selectedColor);
   };
 
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  const shipping = subtotal > 2000 ? 0 : 150;
-  const total = subtotal + shipping;
+  const [subtotal, setSubtotal] = useState(0);
+  const [shipping, setShipping] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [charges, setCharges] = useState<{ label: string, amount: number }[]>([]);
+
+  useEffect(() => {
+    const calculate = async () => {
+      const sub = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+      setSubtotal(sub);
+
+      // Fetch charges dynamically from Supabase
+      const { ChargesService } = await import('@/services/charges.service');
+      const applicableCharges = await ChargesService.getApplicableCharges(sub);
+      const chargeAmount = ChargesService.calculateCharges(sub, applicableCharges);
+
+      setShipping(chargeAmount);
+      setCharges(applicableCharges.map(c => ({
+        label: c.label,
+        amount: c.type === 'fixed' ? c.amount : (sub * (c.amount / 100))
+      })));
+      setTotal(sub + chargeAmount);
+    };
+
+    calculate();
+  }, [cartItems]);
 
   if (loading) {
     return (
@@ -188,25 +210,6 @@ export default function CartPage() {
                   );
                 })}
 
-                {/* Benefits Section */}
-                <div className="bg-white p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-start gap-3">
-                      <Truck className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-black mb-1">Free Shipping</h4>
-                        <p className="text-sm text-gray-600 font-light">On orders above ₹2,000</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Shield className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-widest text-black mb-1">Secure Payment</h4>
-                        <p className="text-sm text-gray-600 font-light">100% secure transactions</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Order Summary - Sticky Sidebar - HIDDEN ON MOBILE */}
@@ -221,25 +224,20 @@ export default function CartPage() {
                       <dt className="text-gray-600 font-light">Subtotal</dt>
                       <dd className="text-black font-medium">₹{subtotal.toLocaleString()}</dd>
                     </div>
-                    <div className="flex items-center justify-between text-sm pb-6 border-b border-gray-100">
-                      <dt className="text-gray-600 font-light">Shipping</dt>
-                      <dd className="text-black font-medium">
-                        {shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`}
-                      </dd>
-                    </div>
-                    <div className="flex items-center justify-between pt-2">
+
+                    {/* Dynamic Charges from Backend */}
+                    {charges.map((charge, index) => (
+                      <div key={index} className="flex items-center justify-between text-sm pb-2 border-gray-100">
+                        <dt className="text-gray-600 font-light">{charge.label}</dt>
+                        <dd className="text-black font-medium">₹{charge.amount.toLocaleString()}</dd>
+                      </div>
+                    ))}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                       <dt className="text-sm font-bold uppercase tracking-wider text-black">Total</dt>
                       <dd className="text-2xl font-medium text-black">₹{total.toLocaleString()}</dd>
                     </div>
                   </dl>
-
-                  {shipping > 0 && (
-                    <div className="bg-gray-50 p-4 mb-6">
-                      <p className="text-xs text-gray-600 font-light text-center">
-                        Add <span className="font-medium text-black">₹{(2000 - subtotal).toLocaleString()}</span> more for free shipping
-                      </p>
-                    </div>
-                  )}
 
                   <button
                     onClick={() => window.location.href = "/checkout"}
@@ -272,10 +270,13 @@ export default function CartPage() {
                   <dt className="text-gray-600 font-light">Subtotal</dt>
                   <dd className="text-black font-medium">₹{subtotal.toLocaleString()}</dd>
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 font-light">Shipping</dt>
-                  <dd className="text-black font-medium">{shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`}</dd>
-                </div>
+                {/* Dynamic Charges */}
+                {charges.map((charge, index) => (
+                  <div key={index} className="flex justify-between">
+                    <dt className="text-gray-600 font-light">{charge.label}</dt>
+                    <dd className="text-black font-medium">₹{charge.amount.toLocaleString()}</dd>
+                  </div>
+                ))}
               </dl>
             </div>
           )}

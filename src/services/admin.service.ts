@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabse/client";
 
+
 const supabase = createClient();
 
 import { Product, Order } from "@/types";
@@ -56,135 +57,14 @@ export const AdminService = {
     },
 
     async updateOrderStatus(orderId: string, status: string) {
-        // 1. Get the order details to get user email
-        const { data: order, error: orderError } = await supabase
-            .from("orders")
-            .select("customer_email, id")
-            .eq("id", orderId)
-            .single();
-
-        if (orderError) throw orderError;
-
-        // 2. Update status
+        // This logic has moved to the server action: updateOrderStatusAction
+        // DO NOT implement client-side email sending here.
         const { error } = await supabase
             .from("orders")
             .update({ status })
             .eq("id", orderId);
 
         if (error) throw error;
-
-        // 3. Send Email Notification
-        if (order?.customer_email) {
-            try {
-                const subject = `Order Update #${order.id.slice(0, 8)}: ${status.charAt(0).toUpperCase() + status.slice(1)}`;
-                const statusColor = status === 'delivered' ? '#15803d' : status === 'shipped' ? '#1d4ed8' : '#a16207';
-                const statusText = status.charAt(0).toUpperCase() + status.slice(1);
-
-                const html = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Order Status Update</title>
-                    </head>
-                    <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f9fafb; padding: 40px 0;">
-                            <tr>
-                                <td align="center">
-                                    <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 0px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-                                        <!-- Header -->
-                                        <tr>
-                                            <td align="center" style="padding: 40px 0 30px 0; border-bottom: 1px solid #f3f4f6;">
-                                                <h1 style="margin: 0; font-family: 'Times New Roman', serif; font-size: 32px; letter-spacing: 2px; color: #000000; font-weight: bold;">YURA.</h1>
-                                                <p style="margin: 5px 0 0 0; font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: #6b7280;">Premium Ethnic Wear</p>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Status Badge -->
-                                        <tr>
-                                            <td align="center" style="padding: 40px 40px 20px 40px;">
-                                                <div style="display: inline-block; padding: 8px 16px; background-color: ${status === 'delivered' ? '#dcfce7' : status === 'shipped' ? '#dbeafe' : '#fef9c3'}; border-radius: 4px;">
-                                                    <span style="color: ${statusColor}; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
-                                                        ${statusText}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Main Content -->
-                                        <tr>
-                                            <td align="center" style="padding: 0 40px 40px 40px;">
-                                                <h2 style="margin: 0 0 16px 0; font-size: 24px; color: #111827; font-weight: normal;">Order Update</h2>
-                                                <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 24px; color: #4b5563;">
-                                                    Your order <strong style="color: #000000;">#${order.id.slice(0, 8).toUpperCase()}</strong> has been updated.
-                                                </p>
-                                                
-                                                ${status === 'shipped' ? `
-                                                    <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 24px; color: #4b5563;">
-                                                        Your package is on its way! We've handed it over to our shipping partner. You can track your shipment using the link below once it becomes active.
-                                                    </p>
-                                                ` : status === 'delivered' ? `
-                                                    <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 24px; color: #4b5563;">
-                                                        Your package has been delivered. We hope you love your new purchase! If you have any feedback, we'd love to hear from you.
-                                                    </p>
-                                                ` : `
-                                                    <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 24px; color: #4b5563;">
-                                                        We are processing your order with care. We will notify you as soon as it is shipped.
-                                                    </p>
-                                                `}
-
-                                                <!-- Button -->
-                                                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://yura.co.in'}/order/track?id=${order.id}" style="display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-radius: 0px;">
-                                                    View Order Details
-                                                </a>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Divider -->
-                                        <tr>
-                                            <td style="padding: 0 40px;">
-                                                <div style="height: 1px; background-color: #f3f4f6; width: 100%;"></div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Footer -->
-                                        <tr>
-                                            <td align="center" style="padding: 30px 40px; background-color: #ffffff;">
-                                                <p style="margin: 0 0 10px 0; font-family: 'Times New Roman', serif; font-size: 14px; color: #000000;">YURA.</p>
-                                                <p style="margin: 0 0 0 0; font-size: 12px; line-height: 20px; color: #9ca3af;">
-                                                    123 Fashion Street, Mumbai, India<br>
-                                                    Questions? Reply to this email.
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                    
-                                    <!-- Unsub -->
-                                    <p style="margin-top: 20px; font-size: 11px; color: #9ca3af; text-align: center;">
-                                        &copy; ${new Date().getFullYear()} YURA. All rights reserved.
-                                    </p>
-                                </td>
-                            </tr>
-                        </table>
-                    </body>
-                    </html>
-                `;
-
-                await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        to: order.customer_email,
-                        subject,
-                        html
-                    })
-                });
-            } catch (err) {
-                console.error("Failed to send status email", err);
-                // Don't block the UI for email failure
-            }
-        }
     },
 
     async deleteProduct(id: string) {
@@ -490,18 +370,7 @@ export const AdminService = {
     async getOrderById(id: string) {
         const { data, error } = await supabase
             .from('orders')
-            .select(`
-                *,
-                order_items (
-                    *,
-                    product:products (
-                        name,
-                        price,
-                        slug,
-                        product_images (image_url, is_primary)
-                    )
-                )
-            `)
+            .select('*')
             .eq('id', id)
             .single();
 
@@ -511,6 +380,57 @@ export const AdminService = {
         }
 
         return data;
+    },
+
+    async getAccountingStats() {
+        const { data: orders, error } = await supabase
+            .from("orders")
+            .select("id, status, payment_status, total_amount, created_at, payment_method");
+
+        if (error) {
+            console.error("Error fetching accounting stats:", error);
+            throw new Error("Failed to fetch accounting stats");
+        }
+
+        const metrics = {
+            totalRevenue: 0,
+            potentialRevenue: 0,
+            lostRevenue: 0,
+            ordersDelivered: 0,
+            ordersPending: 0,
+            ordersCancelled: 0,
+            totalOrders: orders.length,
+            codPendingAmount: 0,
+        };
+
+        orders.forEach(order => {
+            const amount = Number(order.total_amount) || 0;
+
+            // Revenue Calculations
+            if (order.payment_status === 'paid') {
+                metrics.totalRevenue += amount;
+            } else if (order.payment_status === 'pending' && order.status !== 'cancelled') {
+                metrics.potentialRevenue += amount;
+                if (order.payment_method === 'cod') {
+                    metrics.codPendingAmount += amount;
+                }
+            }
+
+            // Loss Calculation
+            if (order.status === 'cancelled' || order.status === 'refunded') {
+                metrics.lostRevenue += amount;
+                metrics.ordersCancelled++;
+            }
+
+            // Delivery Stats
+            if (order.status === 'delivered') {
+                metrics.ordersDelivered++;
+            } else if (order.status !== 'cancelled' && order.status !== 'refunded') {
+                metrics.ordersPending++;
+            }
+        });
+
+        return metrics;
     },
 };
 

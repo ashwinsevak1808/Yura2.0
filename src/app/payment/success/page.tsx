@@ -120,8 +120,8 @@ function PaymentSuccessContent() {
                     {/* Support */}
                     <p className="text-center text-xs text-gray-500 font-light mt-8">
                         Need help? Contact us at{" "}
-                        <a href="mailto:yura.info.co@gmail.com" className="text-black hover:underline">
-                            yura.info.co@gmail.com
+                        <a href="mailto:info.yura.co@gmail.com" className="text-black hover:underline">
+                            info.yura.co@gmail.com
                         </a>
                     </p>
                 </div>

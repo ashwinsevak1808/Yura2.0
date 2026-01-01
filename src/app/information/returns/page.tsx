@@ -1,5 +1,11 @@
 import { MainLayout } from "@/components/layout/main_layout";
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Returns & Exchanges',
+};
+
 export default function ReturnsPage() {
     return (
         <MainLayout>

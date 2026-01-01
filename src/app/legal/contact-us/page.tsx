@@ -4,6 +4,12 @@ import React from 'react';
 import { MainLayout } from '@/components/layout/main_layout';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Contact Us',
+};
+
 export default function ContactUsPage() {
     return (
         <MainLayout>
@@ -35,10 +41,10 @@ export default function ContactUsPage() {
                                     <div>
                                         <h3 className="text-lg font-medium text-black mb-2">Email Us</h3>
                                         <a
-                                            href="mailto:yura.info.co@gmail.com"
+                                            href="mailto:info.yura.co@gmail.com"
                                             className="text-base text-gray-700 hover:text-black transition-colors font-light"
                                         >
-                                            yura.info.co@gmail.com
+                                            info.yura.co@gmail.com
                                         </a>
                                         <p className="text-sm text-gray-500 mt-2 font-light">
                                             We'll respond within 24 hours
@@ -131,8 +137,8 @@ export default function ContactUsPage() {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 mb-1">Email</p>
-                                        <a href="mailto:yura.info.co@gmail.com" className="text-black font-medium hover:underline">
-                                            yura.info.co@gmail.com
+                                        <a href="mailto:info.yura.co@gmail.com" className="text-black font-medium hover:underline">
+                                            info.yura.co@gmail.com
                                         </a>
                                     </div>
                                 </div>

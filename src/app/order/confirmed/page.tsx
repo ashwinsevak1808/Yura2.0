@@ -4,6 +4,8 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/main_layout";
 import { CheckCircle, Package, Mail, Home, Download } from "lucide-react";
+import { getOrderDetailsAction } from "@/app/actions/checkout";
+import { InvoiceTemplate } from "@/components/admin/InvoiceTemplate";
 
 function OrderConfirmedContent() {
   const searchParams = useSearchParams();
@@ -13,6 +15,9 @@ function OrderConfirmedContent() {
     razorpayPaymentId: "",
     razorpayOrderId: "",
   });
+
+  const [fullOrderData, setFullOrderData] = useState<any>(null);
+  const [loadingInvoice, setLoadingInvoice] = useState(false);
 
   useEffect(() => {
     // Get order details from URL params (passed from checkout)
@@ -27,41 +32,54 @@ function OrderConfirmedContent() {
       razorpayPaymentId,
       razorpayOrderId,
     });
+
+    // Fetch full order data for invoice if orderId exists
+    if (orderId) {
+      setLoadingInvoice(true);
+      getOrderDetailsAction(orderId)
+        .then(res => {
+          if (res.success && res.order) {
+            setFullOrderData(res.order);
+          }
+        })
+        .finally(() => setLoadingInvoice(false));
+    }
   }, [searchParams]);
 
   const isOnlinePayment = orderDetails.paymentMethod === "ONLINE";
 
   const handleDownloadReceipt = () => {
-    // Create a simple receipt
-    const receiptContent = `
-YURAA - Payment Receipt
-========================
-
-Order ID: ${orderDetails.orderId}
-Payment Method: Online Payment
-Razorpay Payment ID: ${orderDetails.razorpayPaymentId}
-Razorpay Order ID: ${orderDetails.razorpayOrderId}
-Date: ${new Date().toLocaleString()}
-
-Status: PAID ✓
-
-Thank you for your purchase!
-
-For support, contact:
-Email: yura.info.co@gmail.com
-Phone: 8879963368
-    `;
-
-    const blob = new Blob([receiptContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `YURAA-Receipt-${orderDetails.orderId.slice(0, 8)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Trigger browser print, which uses the InvoiceTemplate's print styles
+    window.print();
   };
+
+  // Prepare Invoice Data if available
+  const invoiceData = fullOrderData ? {
+    id: fullOrderData.id,
+    date: new Date(fullOrderData.created_at).toLocaleDateString("en-IN", { day: 'numeric', month: 'short', year: 'numeric' }),
+    customer: {
+      name: fullOrderData.customer_name,
+      email: fullOrderData.customer_email,
+      address: [
+        fullOrderData.shipping_address?.street,
+        fullOrderData.shipping_address?.city,
+        fullOrderData.shipping_address?.state,
+        fullOrderData.shipping_address?.zipCode,
+        "India"
+      ].filter(Boolean).join(", ")
+    },
+    items: (fullOrderData.items || []).map((item: any) => ({
+      name: item.product_name,
+      size: item.size,
+      qty: item.quantity,
+      price: item.price
+    })),
+    subtotal: fullOrderData.subtotal,
+    shipping: fullOrderData.shipping_cost,
+    total: fullOrderData.total_amount,
+    payment_method: fullOrderData.payment_method === 'razorpay' ? 'Online' : 'COD',
+    payment_status: fullOrderData.payment_status === 'paid' ? 'Paid' : 'Pending'
+  } : null;
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20 pt-16">
@@ -104,10 +122,11 @@ Phone: 8879963368
               <div className="mt-6">
                 <button
                   onClick={handleDownloadReceipt}
-                  className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
+                  disabled={!invoiceData}
+                  className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50"
                 >
                   <Download className="w-4 h-4" />
-                  Download Payment Receipt
+                  {loadingInvoice ? "Preparing..." : "Download Official Receipt"}
                 </button>
                 <p className="text-xs text-gray-500 mt-2">
                   Payment ID: {orderDetails.razorpayPaymentId}
@@ -165,8 +184,8 @@ Phone: 8879963368
           <div className="bg-white p-8 text-center">
             <p className="text-sm text-gray-600 font-light mb-6">
               Need help with your order? Contact us at{" "}
-              <a href="mailto:yura.info.co@gmail.com" className="text-black hover:underline">
-                yura.info.co@gmail.com
+              <a href="mailto:info.yura.co@gmail.com" className="text-black hover:underline">
+                info.yura.co@gmail.com
               </a>
             </p>
 
@@ -179,6 +198,13 @@ Phone: 8879963368
           </div>
         </div>
       </div>
+
+      {/* Hidden Invoice Template for Print */}
+      {invoiceData && (
+        <div className="invisible h-0 w-0 overflow-hidden absolute top-0 left-0">
+          <InvoiceTemplate invoice={invoiceData} />
+        </div>
+      )}
     </div>
   );
 }

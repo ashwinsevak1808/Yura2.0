@@ -52,10 +52,13 @@ export default function PremiumKurtiHeader() {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-20">
             {/* Logo - Updated to YURAA */}
+            {/* Logo - Updated to YURAA */}
             <a href="/" className="flex items-center group">
-              <span className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 transition-opacity duration-300 group-hover:opacity-70">
-                YURAA
-              </span>
+              <img
+                src="/logo.svg"
+                alt="YURAA"
+                className="h-12 sm:h-14 w-auto transition-opacity duration-300 group-hover:opacity-70"
+              />
             </a>
 
             {/* Desktop Navigation */}

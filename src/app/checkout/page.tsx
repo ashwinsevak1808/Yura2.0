@@ -6,8 +6,9 @@ import { MainLayout } from "@/components/layout/main_layout";
 import { CartService } from "@/services/cart.service";
 import { submitOrderAction } from "@/app/actions/checkout";
 import { createRazorpayOrder, verifyRazorpayPayment } from "@/app/actions/payment";
+import { generateAndSendOtp, verifyOtpAction } from "@/app/actions/otp"; // Import OTP actions
 import { OrderData, CartItem } from "@/types";
-import { Lock, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
+import { Lock, ChevronDown, ChevronUp, X } from "lucide-react";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 
@@ -24,6 +25,13 @@ export default function CheckoutPage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+
+    // OTP States
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [otpCode, setOtpCode] = useState("");
+    const [isVerified, setIsVerified] = useState(false);
+    const [otpLoading, setOtpLoading] = useState(false);
+    const [otpError, setOtpError] = useState("");
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -48,17 +56,89 @@ export default function CheckoutPage() {
         setLoading(false);
     }, [router]);
 
-    const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-    const shipping = subtotal > 2000 ? 0 : 150;
-    const total = subtotal + shipping;
+    const [subtotal, setSubtotal] = useState(0);
+    const [charges, setCharges] = useState<{ label: string, amount: number }[]>([]);
+    const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        const calculate = async () => {
+            const sub = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+            setSubtotal(sub);
+
+            // Fetch charges dynamically
+            const { ChargesService } = await import('@/services/charges.service');
+            const applicableCharges = await ChargesService.getApplicableCharges(sub);
+            const chargeAmount = ChargesService.calculateCharges(sub, applicableCharges);
+
+            setCharges(applicableCharges.map(c => ({
+                label: c.label,
+                amount: c.type === 'fixed' ? c.amount : (sub * (c.amount / 100))
+            })));
+            setTotal(sub + chargeAmount);
+        };
+        if (cartItems.length > 0) calculate();
+    }, [cartItems]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const initiateOtp = async () => {
+        // Validation for Phone Number (10 digits)
+        if (!/^\d{10}$/.test(formData.phone)) {
+            alert("Please enter a valid 10-digit phone number.");
+            return;
+        }
+
+        setOtpLoading(true);
+        setOtpError("");
+        const result = await generateAndSendOtp(formData.email, formData.phone);
+        setOtpLoading(false);
+
+        if (result.success) {
+            setShowOtpModal(true);
+        } else {
+            alert(result.message || "Failed to send verification code.");
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (otpCode.length < 6) {
+            setOtpError("Please enter a valid 6-digit code");
+            return;
+        }
+        setOtpLoading(true);
+        const result = await verifyOtpAction(formData.email, otpCode);
+        setOtpLoading(false);
+
+        if (result.success) {
+            setIsVerified(true);
+            setShowOtpModal(false);
+            processOrderSubmission();
+        } else {
+            setOtpError(result.message || "Invalid code. Please try again.");
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log("Checkout Submit Triggered. Verified Status:", isVerified);
+
+        if (!isVerified) {
+            console.log("Not verified yet. Initiating OTP...");
+            // Trigger OTP flow
+            await initiateOtp();
+            return;
+        }
+
+        // Proceed if verified
+        console.log("Verified. Processing Order Submission...");
+        await processOrderSubmission();
+    };
+
+    const processOrderSubmission = async () => {
+        console.log("Starting processOrderSubmission...");
         setSubmitting(true);
 
         const orderData: OrderData = {
@@ -249,7 +329,7 @@ export default function CheckoutPage() {
 
     return (
         <MainLayout>
-            <div className="bg-gray-50 min-h-screen pb-20 pt-16">
+            <div className="bg-gray-50 min-h-screen pb-20 pt-16 relative">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-32">
 
                     {/* Breadcrumb */}
@@ -277,9 +357,17 @@ export default function CheckoutPage() {
 
                                 {/* Contact Information */}
                                 <div className="bg-white p-6 sm:p-8">
-                                    <h2 className="text-xs font-bold uppercase tracking-widest text-black mb-6 pb-4 border-b border-gray-100">
-                                        Contact Information
-                                    </h2>
+                                    <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                                        <h2 className="text-xs font-bold uppercase tracking-widest text-black">
+                                            Contact Information
+                                        </h2>
+                                        {isVerified && (
+                                            <span className="text-xs font-bold uppercase tracking-wider text-green-600 flex items-center gap-1">
+                                                <div className="w-2 h-2 rounded-full bg-green-500" />
+                                                Verified
+                                            </span>
+                                        )}
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                         <div>
                                             <label htmlFor="firstName" className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
@@ -318,24 +406,38 @@ export default function CheckoutPage() {
                                                 name="email"
                                                 id="email"
                                                 required
+                                                readOnly={isVerified}
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-gray-200 text-sm font-light focus:outline-none focus:border-black transition-colors"
+                                                className={`w-full px-4 py-3 border border-gray-200 text-sm font-light focus:outline-none focus:border-black transition-colors ${isVerified ? 'bg-gray-50 text-gray-500' : ''}`}
                                             />
                                         </div>
                                         <div>
                                             <label htmlFor="phone" className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">
                                                 Phone *
                                             </label>
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                id="phone"
-                                                required
-                                                value={formData.phone}
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-gray-200 text-sm font-light focus:outline-none focus:border-black transition-colors"
-                                            />
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-light pointer-events-none">
+                                                    +91
+                                                </span>
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    id="phone"
+                                                    required
+                                                    readOnly={isVerified}
+                                                    maxLength={10}
+                                                    value={formData.phone}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.replace(/\D/g, '');
+                                                        if (val.length <= 10) {
+                                                            setFormData(prev => ({ ...prev, phone: val }));
+                                                        }
+                                                    }}
+                                                    className={`w-full pl-12 pr-4 py-3 border border-gray-200 text-sm font-light focus:outline-none focus:border-black transition-colors ${isVerified ? 'bg-gray-50 text-gray-500' : ''}`}
+                                                    placeholder="9876543210"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -527,12 +629,19 @@ export default function CheckoutPage() {
                                             <dt className="text-gray-600 font-light">Subtotal</dt>
                                             <dd className="text-black font-medium">₹{subtotal.toLocaleString()}</dd>
                                         </div>
-                                        <div className="flex items-center justify-between text-sm pb-4 border-b border-gray-100">
-                                            <dt className="text-gray-600 font-light">Shipping</dt>
-                                            <dd className="text-black font-medium">
-                                                {shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`}
-                                            </dd>
-                                        </div>
+                                        {charges.map((charge, index) => (
+                                            <div key={index} className="flex items-center justify-between text-sm pb-2 border-gray-100">
+                                                <dt className="text-gray-600 font-light">{charge.label}</dt>
+                                                <dd className="text-black font-medium">₹{charge.amount.toLocaleString()}</dd>
+                                            </div>
+                                        ))}
+
+                                        {charges.length === 0 && (
+                                            <div className="flex items-center justify-between text-sm pb-4 border-b border-gray-100">
+                                                <dt className="text-gray-600 font-light">Shipping</dt>
+                                                <dd className="text-black font-medium">Free</dd>
+                                            </div>
+                                        )}
                                         <div className="flex items-center justify-between pt-2">
                                             <dt className="text-sm font-bold uppercase tracking-wider text-black">Total</dt>
                                             <dd className="text-2xl font-medium text-black">₹{total.toLocaleString()}</dd>
@@ -553,7 +662,7 @@ export default function CheckoutPage() {
                                         ) : (
                                             <>
                                                 <Lock className="w-4 h-4" />
-                                                Place Order
+                                                {isVerified ? "Place Order" : "Verify & Place Order"}
                                             </>
                                         )}
                                     </button>
@@ -575,10 +684,13 @@ export default function CheckoutPage() {
                                             <dt className="text-gray-600 font-light">Subtotal</dt>
                                             <dd className="text-black font-medium">₹{subtotal.toLocaleString()}</dd>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <dt className="text-gray-600 font-light">Shipping</dt>
-                                            <dd className="text-black font-medium">{shipping === 0 ? "Free" : `₹${shipping.toLocaleString()}`}</dd>
-                                        </div>
+                                        {/* Dynamic Charges */}
+                                        {charges.map((charge, index) => (
+                                            <div key={index} className="flex justify-between">
+                                                <dt className="text-gray-600 font-light">{charge.label}</dt>
+                                                <dd className="text-black font-medium">₹{charge.amount.toLocaleString()}</dd>
+                                            </div>
+                                        ))}
                                     </dl>
                                 </div>
                             )}
@@ -612,7 +724,7 @@ export default function CheckoutPage() {
                                     ) : (
                                         <>
                                             <Lock className="w-4 h-4" />
-                                            Place Order
+                                            {isVerified ? "Place Order" : "Verify & Place Order"}
                                         </>
                                     )}
                                 </button>
@@ -620,6 +732,73 @@ export default function CheckoutPage() {
                         </div>
                     </form>
                 </div>
+
+                {/* OTP Verification Modal */}
+                {showOtpModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white p-6 sm:p-8 w-full max-w-md shadow-2xl relative">
+                            <button
+                                onClick={() => setShowOtpModal(false)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <div className="text-center mb-6">
+                                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Lock className="w-5 h-5 text-black" />
+                                </div>
+                                <h3 className="text-xl font-serif font-bold text-black mb-2">Verify Your Order</h3>
+                                <p className="text-sm text-gray-500 font-light">
+                                    We've sent a 6-digit code to <br />
+                                    <span className="font-medium text-black">{formData.email}</span>
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <input
+                                        type="text"
+                                        placeholder="000000"
+                                        maxLength={6}
+                                        value={otpCode}
+                                        onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                                        className="w-full text-center text-3xl tracking-[0.5em] font-mono p-4 border border-gray-200 focus:border-black focus:outline-none transition-colors placeholder:text-gray-200"
+                                    />
+                                    {otpError && (
+                                        <p className="text-red-500 text-xs text-center mt-2 font-medium animate-pulse">{otpError}</p>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={handleVerifyOtp}
+                                    disabled={otpLoading || otpCode.length !== 6}
+                                    className="w-full bg-black text-white py-4 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {otpLoading ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                            Verifying...
+                                        </>
+                                    ) : (
+                                        "Verify Code"
+                                    )}
+                                </button>
+
+                                <div className="text-center">
+                                    <button
+                                        type="button"
+                                        onClick={initiateOtp}
+                                        className="text-[10px] uppercase tracking-wider text-gray-400 hover:text-black underline transition-colors"
+                                    >
+                                        Resend Code
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </MainLayout>
     );

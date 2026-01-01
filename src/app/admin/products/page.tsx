@@ -6,6 +6,8 @@ import { Product } from "@/types";
 import { Plus, Edit, Trash2, LayoutGrid, List, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { Pagination } from "@/components/ui/pagination";
+
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -13,6 +15,10 @@ export default function AdminProductsPage() {
 
     const [view, setView] = useState<'list' | 'grid'>('list');
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12; // Good for grid (2, 3, 4 cols)
 
     useEffect(() => {
         async function loadProducts() {
@@ -23,6 +29,11 @@ export default function AdminProductsPage() {
 
         loadProducts();
     }, []);
+
+    // Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, view]);
 
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this product?")) {
@@ -56,6 +67,13 @@ export default function AdminProductsPage() {
     const filteredProducts = products.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    // Calculate Pagination
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const paginatedProducts = filteredProducts.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
     );
 
     if (loading) {
@@ -117,7 +135,7 @@ export default function AdminProductsPage() {
             {/* Content */}
             {view === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {filteredProducts.map((product) => {
+                    {paginatedProducts.map((product) => {
                         const image = (product as any).product_images?.[0]?.image_url;
                         return (
                             <div key={product.id} className="group bg-white border border-gray-100 hover:border-black/20 transition-all duration-300">
@@ -183,7 +201,7 @@ export default function AdminProductsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50 bg-white">
-                            {filteredProducts.map((product) => {
+                            {paginatedProducts.map((product) => {
                                 const image = (product as any).product_images?.[0]?.image_url;
                                 return (
                                     <tr key={product.id} className="group hover:bg-gray-50/50 transition-colors">
@@ -242,6 +260,11 @@ export default function AdminProductsPage() {
                     </table>
                 </div>
             )}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            />
         </div>
     );
 }

@@ -1,4 +1,5 @@
-import { Instagram, Linkedin, Mail, MapPin } from "lucide-react";
+import { Instagram, Mail } from "lucide-react";
+import { FaLinkedinIn } from "react-icons/fa6";
 
 const Footer = () => {
   return (
@@ -12,25 +13,26 @@ const Footer = () => {
           <div className="mb-12 pb-12 border-b border-gray-800">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
               <div>
-                <h3 className="text-3xl md:text-4xl font-serif font-medium text-white mb-4">
-                  YURAA
-                </h3>
+                <a href="/" className="block mb-6">
+                  <img
+                    src="/logo.svg"
+                    alt="YURAA"
+                    className="h-10 md:h-12 w-auto brightness-0 invert"
+                  />
+                </a>
                 <p className="text-gray-400 text-sm font-light leading-relaxed max-w-md">
                   Crafting timeless elegance through premium fabrics and meticulous attention to detail.
                 </p>
               </div>
-              <div className="flex flex-col md:items-end gap-3 text-sm">
-                <a href="mailto:yura.info.co@gmail.com" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  <span className="font-light">yura.info.co@gmail.com</span>
+              <div className="flex flex-row md:justify-end gap-4">
+                <a href="mailto:info.yura.co@gmail.com" className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-900 border border-gray-800 text-gray-400 hover:bg-white hover:text-black hover:border-white transition-all duration-300 group" aria-label="Email Us">
+                  <Mail className="w-5 h-5 stroke-[1.5]" />
                 </a>
-                <a href="https://instagram.com/_yuraaclothing_" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
-                  <Instagram className="w-4 h-4" />
-                  <span className="font-light">@_yuraaclothing_</span>
+                <a href="https://instagram.com/_yuraaclothing_" target="_blank" rel="noopener noreferrer" className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-900 border border-gray-800 text-gray-400 hover:bg-white hover:text-black hover:border-white transition-all duration-300" aria-label="Instagram">
+                  <Instagram className="w-5 h-5 stroke-[1.5]" />
                 </a>
-                <a href="https://www.linkedin.com/in/yuraaclothing/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
-                  <Linkedin className="w-4 h-4" />
-                  <span className="font-light">YURAA Clothing</span>
+                <a href="https://www.linkedin.com/in/yuraaclothing/" target="_blank" rel="noopener noreferrer" className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-900 border border-gray-800 text-gray-400 hover:bg-white hover:text-black hover:border-white transition-all duration-300" aria-label="LinkedIn">
+                  <FaLinkedinIn className="w-5 h-5 stroke-[1.5]" />
                 </a>
               </div>
             </div>
