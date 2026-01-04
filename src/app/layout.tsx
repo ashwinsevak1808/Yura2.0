@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,6 +25,24 @@ export const metadata: Metadata = {
   description: "Discover premium office wear for the modern professional. Shop our curated collections of business suits, dresses, and accessories.",
   icons: {
     icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'YURAA - Premium Kurtis',
+    description: "Discover premium office wear for the modern professional.",
+    url: 'https://yuraa.co.in',
+    siteName: 'YURAA',
+    images: [
+      {
+        url: '/logo.svg', // Social platforms prefer PNG/JPG, but SVG is better than nothing/default
+        width: 800,
+        height: 600,
+        alt: 'YURAA Logo',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
   },
 };
 
@@ -54,6 +73,7 @@ export default function RootLayout({
         </Script>
         <Providers>
           {children}
+          <Analytics />
         </Providers>
       </body>
     </html>

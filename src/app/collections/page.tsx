@@ -247,7 +247,7 @@ function CollectionsContent() {
 
                     <div className="max-w-4xl">
                         <p className="text-xs font-bold text-black mb-4 uppercase tracking-widest">
-                            Collection 2025
+                            Collection 2026
                         </p>
                         <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-medium text-black mb-6 leading-tight">
                             Latest Arrivals

@@ -189,4 +189,109 @@ export class ShiprocketService {
             };
         }
     }
+
+    public static async createReturnOrder(order: any, items: OrderItem[]) {
+        try {
+            let token = await this.login();
+            if (!token) return { success: false, message: 'Auth Failed' };
+
+            // Map Items to Shiprocket format
+            const orderItems: ShiprocketOrderItem[] = items.map(item => ({
+                name: item.product_name,
+                sku: `${item.product_id.substring(0, 5)}-${item.size}-${item.color}`, // Generate SKU
+                units: item.quantity,
+                selling_price: item.price,
+                discount: "0",
+                tax: "0"
+            }));
+
+            const date = new Date();
+            const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+            // Return Payload
+            const payload = {
+                order_id: `RET-${order.id.slice(0, 8)}`, // Unique Return ID
+                order_date: formattedDate,
+                channel_id: "", // Optional
+                pickup_customer_name: order.customer_name.split(' ')[0],
+                pickup_last_name: order.customer_name.split(' ').slice(1).join(' ') || "",
+                pickup_address: order.shipping_address.street,
+                pickup_address_2: "",
+                pickup_city: order.shipping_address.city,
+                pickup_state: order.shipping_address.state,
+                pickup_pincode: order.shipping_address.zipCode || order.shipping_address.zip_code,
+                pickup_email: order.customer_email,
+                pickup_phone: order.customer_phone,
+                pickup_country: "India",
+                shipping_customer_name: "YURAA Warehouse",
+                shipping_last_name: "",
+                shipping_address: "Yuraa Headoffice, Surat",
+                shipping_address_2: "",
+                shipping_city: "Surat",
+                shipping_pincode: "395007",
+                shipping_state: "Gujarat",
+                shipping_country: "India",
+                shipping_email: "info@yura.co.in",
+                shipping_phone: "9876543210",
+                order_items: orderItems,
+                payment_method: "Prepaid",
+                total_discount: 0,
+                sub_total: order.subtotal,
+                length: 30,
+                breadth: 20,
+                height: 10,
+                weight: 0.5
+            };
+
+            console.log('Shiprocket Return Payload:', JSON.stringify(payload, null, 2));
+
+            let response = await fetch(`${this.API_URL}/orders/create/return`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            // Retry Logic (Same as createOrder)
+            if (response.status === 401) {
+                token = await this.login(true);
+                if (token) {
+                    response = await fetch(`${this.API_URL}/orders/create/return`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(payload),
+                    });
+                }
+            }
+
+            const textResponse = await response.text();
+            let result;
+            try {
+                result = JSON.parse(textResponse);
+            } catch (e) {
+                console.error("Shiprocket Non-JSON Response:", textResponse);
+                throw new Error(`Invalid Response: ${textResponse.substring(0, 100)}`);
+            }
+
+            if (!response.ok || (!result.order_id && !result.shipment_id)) {
+                console.error("Shiprocket Return Error:", result);
+                throw new Error(result.message || JSON.stringify(result));
+            }
+
+            return { success: true, data: result };
+
+        } catch (error) {
+            console.error('Shiprocket Create Return Error:', error);
+            return {
+                success: false,
+                message: error instanceof Error ? error.message : "Shiprocket Unknown Error",
+                error
+            };
+        }
+    }
 }

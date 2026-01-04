@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/main_layout";
 import { getOrderDetailsAction } from "@/app/actions/checkout";
-import { CheckCircle, Clock, Package, Truck, Info, ArrowRight, Circle, Check } from "lucide-react";
+import { requestReturnAction } from "@/app/actions/order";
+import { CheckCircle, Clock, Package, Truck, Info, ArrowRight, X, AlertTriangle } from "lucide-react";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 
 export default function OrderStatusPage() {
@@ -15,9 +16,17 @@ export default function OrderStatusPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    // Return Modal State
+    const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+    const [returnReason, setReturnReason] = useState("");
+    const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
+
     useEffect(() => {
         if (!orderId) return;
+        loadOrder();
+    }, [orderId]);
 
+    const loadOrder = () => {
         setLoading(true);
         getOrderDetailsAction(orderId)
             .then(res => {
@@ -29,7 +38,30 @@ export default function OrderStatusPage() {
             })
             .catch(() => setError("Something went wrong."))
             .finally(() => setLoading(false));
-    }, [orderId]);
+    };
+
+    const handleReturnSubmit = async () => {
+        if (!returnReason.trim()) return;
+
+        setIsSubmittingReturn(true);
+        try {
+            const res = await requestReturnAction(orderId, returnReason);
+            if (res.success) {
+                setIsReturnModalOpen(false);
+                setReturnReason("");
+                // Reload order to show updated status
+                loadOrder();
+                alert("Return request submitted successfully. We will review it shortly.");
+            } else {
+                alert(res.message || "Failed to submit return request.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred.");
+        } finally {
+            setIsSubmittingReturn(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -84,6 +116,26 @@ export default function OrderStatusPage() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24">
                     <div className="max-w-4xl mx-auto">
 
+                        {/* Return Request Banner */}
+                        {order.return_status && (
+                            <div className="mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 md:p-6 rounded-sm shadow-sm">
+                                <div className="flex items-start gap-4">
+                                    <div className="p-2 bg-amber-100 rounded-full shrink-0">
+                                        <AlertTriangle className="w-5 h-5 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-amber-800 uppercase tracking-wide mb-1">
+                                            Return {order.return_status === 'requested' ? 'Requested' : order.return_status}
+                                        </h3>
+                                        <p className="text-sm text-amber-700/80 leading-relaxed">
+                                            You have requested a return for this order on {new Date(order.return_requested_at).toLocaleDateString()}.
+                                            <br />Status: <span className="font-medium">{order.return_status}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Header Section */}
                         <div className="mb-8 md:mb-16 bg-white p-6 md:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
@@ -104,7 +156,14 @@ export default function OrderStatusPage() {
                                     </h1>
                                 </div>
                                 <div className="text-right">
-                                    {/* Placeholder for future actions */}
+                                    {status === 'delivered' && !order.return_status && (
+                                        <button
+                                            onClick={() => setIsReturnModalOpen(true)}
+                                            className="inline-flex items-center justify-center gap-2 bg-white text-black border border-gray-200 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 transition-all rounded-sm"
+                                        >
+                                            Return Order
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             {/* Decorative background pattern */}
@@ -338,6 +397,47 @@ export default function OrderStatusPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Return Request Modal */}
+                {isReturnModalOpen && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-white max-w-md w-full p-6 shadow-xl rounded-sm relative animate-in fade-in zoom-in-95 duration-200">
+                            <button
+                                onClick={() => setIsReturnModalOpen(false)}
+                                className="absolute right-4 top-4 text-gray-400 hover:text-black transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <h3 className="text-xl font-serif text-black mb-2">Request Return</h3>
+                            <p className="text-sm text-gray-500 font-light mb-6">
+                                We are sorry you are not satisfied with your purchase. Please tell us why you would like to return this order.
+                            </p>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-1.5 block">
+                                        Reason for Return
+                                    </label>
+                                    <textarea
+                                        value={returnReason}
+                                        onChange={(e) => setReturnReason(e.target.value)}
+                                        placeholder="e.g., Wrong size, Damaged item, Not as described..."
+                                        className="w-full h-32 p-3 text-sm border border-gray-200 rounded-sm focus:border-black focus:ring-0 transition-colors resize-none placeholder:text-gray-300"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleReturnSubmit}
+                                    disabled={!returnReason.trim() || isSubmittingReturn}
+                                    className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                    {isSubmittingReturn ? "Submitting..." : "Submit Request"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </MainLayout>
     );

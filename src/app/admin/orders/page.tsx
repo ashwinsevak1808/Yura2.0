@@ -40,7 +40,8 @@ export default function AdminOrdersPage() {
     }
 
     const filteredOrders = orders.filter(order => {
-        const matchesStatus = filterStatus === "All" || order.status === filterStatus.toLowerCase();
+        const matchesStatus = filterStatus === "All" ||
+            (filterStatus === "Return Requested" ? order.return_status : order.status === filterStatus.toLowerCase());
         const matchesSearch =
             order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -92,7 +93,7 @@ export default function AdminOrdersPage() {
                             onChange={(e) => setFilterStatus(e.target.value)}
                             className="appearance-none pl-10 pr-10 py-2.5 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 text-sm font-medium focus:ring-0 cursor-pointer rounded-none transition-all w-full sm:w-48 shadow-sm"
                         >
-                            {["All", "Paid", "Pending", "Processing", "Shipped", "Delivered", "Cancelled"].map(status => (
+                            {["All", "Paid", "Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Return Requested"].map(status => (
                                 <option key={status} value={status}>{status}</option>
                             ))}
                         </select>
@@ -144,15 +145,16 @@ export default function AdminOrdersPage() {
                                 <td className="px-8 py-6 whitespace-nowrap">
                                     <span
                                         className={`inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-sm
-                                        ${order.status === 'paid' ? 'bg-green-50 text-green-700' :
-                                                order.status === 'delivered' ? 'bg-green-50 text-green-700' :
-                                                    order.status === 'shipped' ? 'bg-blue-50 text-blue-700' :
-                                                        order.status === 'processing' ? 'bg-yellow-50 text-yellow-700' :
-                                                            order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
-                                                                'bg-gray-100 text-gray-600'
+                                        ${order.return_status ? 'bg-amber-100 text-amber-800' :
+                                                order.status === 'paid' ? 'bg-green-50 text-green-700' :
+                                                    order.status === 'delivered' ? 'bg-green-50 text-green-700' :
+                                                        order.status === 'shipped' ? 'bg-blue-50 text-blue-700' :
+                                                            order.status === 'processing' ? 'bg-yellow-50 text-yellow-700' :
+                                                                order.status === 'cancelled' ? 'bg-red-50 text-red-700' :
+                                                                    'bg-gray-100 text-gray-600'
                                             }`}
                                     >
-                                        {order.status}
+                                        {order.return_status ? `Return ${order.return_status}` : order.status}
                                     </span>
                                 </td>
                                 <td className="px-8 py-6 whitespace-nowrap text-right text-sm font-medium">

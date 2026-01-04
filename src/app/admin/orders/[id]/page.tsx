@@ -8,6 +8,7 @@ import { InvoiceTemplate } from "@/components/admin/InvoiceTemplate";
 import { useDialog } from "@/context/dialog-context";
 import { Order } from "@/types";
 import { updateOrderStatusAction } from "@/app/actions/admin-orders";
+import { approveReturnAction } from "@/app/actions/order";
 
 export default function OrderDetailsPage() {
     const params = useParams();
@@ -87,6 +88,31 @@ export default function OrderDetailsPage() {
                         Back to Orders
                     </button>
                     <div className="flex gap-4">
+                        {order.return_status === 'requested' && (
+                            <button
+                                onClick={async () => {
+                                    if (!confirm("Are you sure you want to approve this return? This will initiate a reverse pickup via Shiprocket.")) return;
+                                    setLoading(true);
+                                    try {
+                                        const res = await approveReturnAction(order.id);
+                                        if (res.success) {
+                                            showSuccess("Return Approved", "Return pickup initiated via Shiprocket.");
+                                            setOrder({ ...order, return_status: 'approved' }); // Optimistic update
+                                        } else {
+                                            showError("Failed", res.message);
+                                        }
+                                    } catch (e) {
+                                        console.error(e);
+                                        showError("Error", "Something went wrong approved return.");
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="flex items-center justify-center px-6 h-11 bg-amber-400 text-black text-xs font-bold uppercase tracking-widest hover:bg-amber-500 shadow-md transition-all min-w-[140px]"
+                            >
+                                Approve Return
+                            </button>
+                        )}
                         <button
                             onClick={() => window.print()}
                             className="flex items-center justify-center px-6 h-11 bg-white border border-gray-200 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 hover:border-black transition-all min-w-[140px]"
@@ -106,6 +132,11 @@ export default function OrderDetailsPage() {
                         <div>
                             <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-2">Order ID</p>
                             <h1 className="text-2xl font-mono font-medium text-black tracking-tight">#{order.id}</h1>
+                            {order.return_status && (
+                                <div className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-bold uppercase tracking-widest ${order.return_status === 'requested' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
+                                    Return {order.return_status}
+                                </div>
+                            )}
                         </div>
                         <div className="text-right">
                             <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold mb-2">Status</p>
@@ -254,7 +285,6 @@ export default function OrderDetailsPage() {
                 </div>
             </div>
 
-            {/* Hidden Invoice Template for Printing */}
             <div className="hidden print:block">
                 <InvoiceTemplate invoice={invoiceData} />
             </div>

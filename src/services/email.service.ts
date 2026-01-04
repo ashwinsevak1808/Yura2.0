@@ -27,7 +27,8 @@ export const EmailService = {
             const shippingCost = orderData.totalAmount < 2000 ? 100 : 0;
             const total = orderData.totalAmount;
 
-            const trackingLink = `${process.env.NEXT_PUBLIC_SITE_URL}/order/status/${orderId}`;
+            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+            const trackingLink = `${siteUrl}/order/status/${orderId}`;
 
             const replacements = {
                 '{{orderId}}': orderId.slice(0, 8).toUpperCase(),

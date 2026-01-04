@@ -1,15 +1,8 @@
 "use server";
 
-import { createClient } from "@/utils/supabse/client"; // Note: This might be client-side import in utils, check if we have server util
-import { createClient as createServerClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/utils/supabse/admin";
 import { EmailService } from "@/services/email.service";
 import { SmsService } from "@/services/sms.service";
-
-// Init admin client for bypassing RLS during OTP creation/verification if needed
-// Or use standard client if RLS allows public insert
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createServerClient(supabaseUrl, supabaseServiceKey);
 
 export async function generateAndSendOtp(email: string, phone: string) {
     try {

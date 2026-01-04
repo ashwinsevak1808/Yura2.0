@@ -236,6 +236,7 @@ export default function CheckoutPage() {
                                     ...orderData,
                                     razorpayOrderId: response.razorpay_order_id,
                                     razorpayPaymentId: response.razorpay_payment_id,
+                                    razorpaySignature: response.razorpay_signature,
                                 });
 
                                 if (orderResult.success) {
@@ -245,7 +246,7 @@ export default function CheckoutPage() {
                                         `/order/confirmed?order_id=${orderResult.orderId}&payment_method=ONLINE&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}`
                                     );
                                 } else {
-                                    throw new Error("Failed to create order after payment");
+                                    throw new Error(orderResult.message || "Failed to create order after payment");
                                 }
                             } else {
                                 throw new Error("Payment verification failed");

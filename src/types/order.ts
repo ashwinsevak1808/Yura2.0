@@ -93,6 +93,11 @@ export interface Order {
     cancelled_at?: string;
     cancellation_reason?: string;
 
+    // Return Information
+    return_requested_at?: string;
+    return_reason?: string;
+    return_status?: 'requested' | 'approved' | 'rejected' | 'completed';
+
 
 
     // Notes & Metadata
