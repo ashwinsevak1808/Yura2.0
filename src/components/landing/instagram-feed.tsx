@@ -3,50 +3,17 @@ import { Instagram, Heart } from "lucide-react";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { InstagramService } from "@/services/instagram.service";
 
-const FALLBACK_POSTS = [
-    {
-        id: '1',
-        media_url: "https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg?auto=compress&cs=tinysrgb&w=800",
-        like_count: "2.4k",
-        caption: "Summer vibes in our new Anarkali collection. ✨ #Yura #EthnicWear",
-        permalink: "https://instagram.com/_yuraaclothing_"
-    },
-    {
-        id: '2',
-        media_url: "https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=800",
-        like_count: "1.8k",
-        caption: "Details that matter. Hand-embroidered perfection.",
-        permalink: "https://instagram.com/_yuraaclothing_"
-    },
-    {
-        id: '3',
-        media_url: "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=800",
-        like_count: "3.2k",
-        caption: "Elegance is the only beauty that never fades. 💫",
-        permalink: "https://instagram.com/_yuraaclothing_"
-    },
-    {
-        id: '4',
-        media_url: "https://images.pexels.com/photos/1382734/pexels-photo-1382734.jpeg?auto=compress&cs=tinysrgb&w=800",
-        like_count: "1.5k",
-        caption: "Festive ready with our latest silk sarees.",
-        permalink: "https://instagram.com/_yuraaclothing_"
-    },
-    {
-        id: '5',
-        media_url: "https://images.pexels.com/photos/3756042/pexels-photo-3756042.jpeg?auto=compress&cs=tinysrgb&w=800",
-        like_count: "4.1k",
-        caption: "Behind the scenes of our latest shoot.",
-        permalink: "https://instagram.com/_yuraaclothing_"
-    }
-];
 
 export default async function InstagramFeed() {
     // Fetch live feed
     const liveFeed = await InstagramService.getFeed();
 
-    // Use live feed if available, otherwise fallback
-    const posts = (liveFeed && liveFeed.length > 0) ? liveFeed.slice(0, 5) : FALLBACK_POSTS;
+    // If no feed is available, hide the entire section
+    if (!liveFeed || liveFeed.length === 0) {
+        return null;
+    }
+
+    const posts = liveFeed.slice(0, 5);
 
     return (
         <section className="py-20 bg-white border-t border-gray-100">
@@ -80,13 +47,23 @@ export default async function InstagramFeed() {
                                 {/* Overlay */}
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-[2px]">
                                     <Instagram className="w-8 h-8 mb-3" />
-                                    {/* Show likes only if available (fallback data) or just a heart icon for real data */}
-                                    {post.like_count ? (
-                                        <p className="font-bold text-sm tracking-wide mb-2">{post.like_count}</p>
-                                    ) : (
-                                        <Heart className="w-4 h-4 mb-2 opacity-80" />
+                                    {post.like_count && (
+                                        <div className="flex items-center gap-1 mb-2">
+                                            <Heart className="w-4 h-4 fill-white text-white" />
+                                            <p className="font-bold text-sm tracking-wide">{post.like_count}</p>
+                                        </div>
                                     )}
-                                    <p className="hidden sm:block text-xs opacity-90 line-clamp-2 text-ellipsis overflow-hidden px-2 max-h-[2.5rem] leading-tight">{post.caption}</p>
+                                    <p
+                                        className="hidden sm:block text-xs font-medium leading-relaxed overflow-hidden px-4"
+                                        style={{
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: '3',
+                                            WebkitBoxOrient: 'vertical',
+                                            textOverflow: 'ellipsis'
+                                        }}
+                                    >
+                                        {post.caption}
+                                    </p>
                                 </div>
                             </a>
                         );

@@ -9,7 +9,7 @@ interface WhatsAppWidgetProps {
 }
 
 export default function WhatsAppWidget({
-    phoneNumber = "918879963368",
+    phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     message = "Hi YURAA, I'm looking for products on your website."
 }: WhatsAppWidgetProps) {
     const [isOpen, setIsOpen] = useState(false);
