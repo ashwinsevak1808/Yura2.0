@@ -19,6 +19,10 @@ export default function ProductGridSection({ products }: ProductGridSectionProps
   const displayedProducts = filteredProducts.slice(0, 4);
   const totalProductCount = products.length;
 
+  if (products.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-16 sm:py-20 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/main_layout";
 import { CheckCircle, Package, ArrowRight } from "lucide-react";
+import { getOrderDetailsAction } from "@/app/actions/checkout";
 
 function PaymentSuccessContent() {
     const router = useRouter();
@@ -13,6 +14,7 @@ function PaymentSuccessContent() {
         paymentId: "",
         amount: "",
     });
+    const hasFiredTracking = useRef(false);
 
     useEffect(() => {
         // Get payment details from URL params
@@ -25,7 +27,36 @@ function PaymentSuccessContent() {
         // Redirect to home if no payment details
         if (!orderId && !paymentId) {
             setTimeout(() => router.push("/"), 3000);
+            return;
         }
+
+        // Track Purchase in GA4 (Only once)
+        if (orderId && !hasFiredTracking.current) {
+            hasFiredTracking.current = true;
+
+            getOrderDetailsAction(orderId).then((res) => {
+                if (res.success && res.order && typeof window !== 'undefined' && (window as any).gtag) {
+                    const order = res.order;
+
+                    (window as any).gtag('event', 'purchase', {
+                        transaction_id: order.id,
+                        value: order.total_amount,
+                        currency: "INR",
+                        tax: order.tax || 0,
+                        shipping: order.shipping_cost || 0,
+                        items: (order.items || []).map((item: any) => ({
+                            item_id: item.product_id,
+                            item_name: item.product_name,
+                            price: item.price,
+                            quantity: item.quantity,
+                            item_variant: item.size ? `${item.color}/${item.size}` : item.color
+                        }))
+                    });
+                    console.log("GA4 Purchase Event Fired for Order:", order.id);
+                }
+            }).catch(err => console.error("Tracking Error:", err));
+        }
+
     }, [searchParams, router]);
 
     return (
@@ -110,7 +141,7 @@ function PaymentSuccessContent() {
                             <ArrowRight className="w-4 h-4" />
                         </button>
                         <button
-                            onClick={() => router.push("/order/confirmed")}
+                            onClick={() => router.push(paymentDetails.orderId ? `/order/status/${paymentDetails.orderId}` : "/")}
                             className="flex-1 bg-white text-black py-4 px-6 text-xs font-bold uppercase tracking-widest border-2 border-black hover:bg-gray-50 transition-colors"
                         >
                             View Order Details

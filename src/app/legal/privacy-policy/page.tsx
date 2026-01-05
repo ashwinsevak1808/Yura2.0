@@ -1,9 +1,11 @@
 import { MainLayout } from '@/components/layout/main_layout';
-
 import { Metadata } from 'next';
+import { Mail, MapPin } from 'lucide-react';
+import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy',
+    title: 'Privacy Policy | YURAA',
+    description: 'Comprehensive Privacy Policy detailing the collection, use, and protection of your data at YURAA.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -13,144 +15,226 @@ export default function PrivacyPolicyPage() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-32">
 
                     {/* Header */}
-                    <div className="max-w-4xl mb-16 pb-12 border-b border-gray-100">
-                        <p className="text-xs font-bold text-black mb-4 uppercase tracking-widest">
-                            Legal
-                        </p>
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium text-black mb-6 leading-tight">
+                    <div className="max-w-4xl mx-auto mb-20 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <span className="inline-block mb-4 text-[10px] font-bold tracking-[0.25em] text-gray-400 uppercase">
+                            Legal Documentation
+                        </span>
+                        <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif text-black mb-6 leading-none tracking-tight">
                             Privacy Policy
                         </h1>
-                        <p className="text-gray-500 text-base font-light max-w-2xl leading-relaxed">
-                            Last updated on Dec 27, 2025
+                        <div className="w-12 h-0.5 bg-black/80 mx-auto mb-8"></div>
+                        <p className="text-gray-600 text-lg sm:text-xl font-light leading-relaxed max-w-xl mx-auto font-serif italic text-balance">
+                            "We are committed to maintaining the confidentiality, integrity, and security of your personal information."
                         </p>
                     </div>
 
                     {/* Content */}
-                    <div className="max-w-3xl space-y-8">
+                    <div className="max-w-2xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
 
-                        <p className="text-gray-600 font-light leading-relaxed">
-                            This privacy policy sets out how YURAA uses and protects any information that you give YURAA when you visit their website and/or agree to purchase from them.
-                        </p>
-
-                        <p className="text-gray-600 font-light leading-relaxed">
-                            YURAA is committed to ensuring that your privacy is protected. Should we ask you to provide certain information by which you can be identified when using this website, then you can be assured that it will only be used in accordance with this privacy statement.
-                        </p>
-
-                        <p className="text-gray-600 font-light leading-relaxed">
-                            YURAA may change this policy from time to time by updating this page. You should check this page from time to time to ensure that you adhere to these changes.
-                        </p>
-
-                        {/* What We Collect */}
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">
-                                What Information We Collect
-                            </h2>
-                            <p className="text-gray-600 font-light leading-relaxed mb-3">We may collect the following information:</p>
-                            <ul className="list-disc pl-6 space-y-2 text-gray-600 font-light leading-relaxed">
-                                <li>Name</li>
-                                <li>Contact information including email address</li>
-                                <li>Demographic information such as postcode, preferences and interests, if required</li>
-                                <li>Other information relevant to customer surveys and/or offers</li>
-                            </ul>
-                        </section>
-
-                        {/* What We Do */}
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">
-                                What We Do With the Information We Gather
-                            </h2>
-                            <p className="text-gray-600 font-light leading-relaxed mb-3">
-                                We require this information to understand your needs and provide you with a better service, and in particular for the following reasons:
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">1. Introduction</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                Welcome to <strong>YURAA</strong> ("we," "us," or "our"). We operate strict privacy and security measures to protect your personal information. This Privacy Policy ("Policy") describes the types of information we may collect from you or that you may provide when you visit our website (our "Website") and our practices for collecting, using, maintaining, protecting, and disclosing that information.
                             </p>
-                            <ul className="list-disc pl-6 space-y-2 text-gray-600 font-light leading-relaxed">
-                                <li>Internal record keeping</li>
-                                <li>We may use the information to improve our products and services</li>
-                                <li>We may periodically send promotional emails about new products, special offers or other information which we think you may find interesting using the email address which you have provided</li>
-                                <li>From time to time, we may also use your information to contact you for market research purposes. We may contact you by email, phone, fax or mail</li>
-                                <li>We may use the information to customise the website according to your interests</li>
-                            </ul>
-                        </section>
-
-                        {/* Security */}
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">
-                                Security
-                            </h2>
-                            <p className="text-gray-600 font-light leading-relaxed">
-                                We are committed to ensuring that your information is secure. In order to prevent unauthorised access or disclosure we have put in suitable measures.
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                By accessing or using this Website, you agree to this Policy. This Policy may change from time to time. Your continued use of this Website after we make changes is deemed to be acceptance of those changes, so please check the Policy periodically for updates.
                             </p>
                         </section>
 
-                        {/* Cookies */}
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">
-                                How We Use Cookies
-                            </h2>
-                            <div className="space-y-4">
-                                <p className="text-gray-600 font-light leading-relaxed">
-                                    A cookie is a small file which asks permission to be placed on your computer's hard drive. Once you agree, the file is added and the cookie helps analyze web traffic or lets you know when you visit a particular site. Cookies allow web applications to respond to you as an individual. The web application can tailor its operations to your needs, likes and dislikes by gathering and remembering information about your preferences.
-                                </p>
-                                <p className="text-gray-600 font-light leading-relaxed">
-                                    We use traffic log cookies to identify which pages are being used. This helps us analyze data about webpage traffic and improve our website in order to tailor it to customer needs. We only use this information for statistical analysis purposes and then the data is removed from the system.
-                                </p>
-                                <p className="text-gray-600 font-light leading-relaxed">
-                                    Overall, cookies help us provide you with a better website, by enabling us to monitor which pages you find useful and which you do not. A cookie in no way gives us access to your computer or any information about you, other than the data you choose to share with us.
-                                </p>
-                                <p className="text-gray-600 font-light leading-relaxed">
-                                    You can choose to accept or decline cookies. Most web browsers automatically accept cookies, but you can usually modify your browser setting to decline cookies if you prefer. This may prevent you from taking full advantage of the website.
-                                </p>
+                        <section className="space-y-6">
+                            <h2 className="text-2xl font-serif font-medium text-black">2. Information We Collect About You</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                We collect several types of information from and about users of our Website, including:
+                            </p>
+
+                            <div className="space-y-8 pl-2">
+                                <div>
+                                    <h3 className="text-lg font-medium text-black mb-2">A. Personal Identification Information</h3>
+                                    <p className="text-gray-600 font-light leading-relaxed text-lg mb-4">
+                                        We may collect personal identification information from Users in a variety of ways, including when Users visit our site, register on the site, place an order, or subscribe to the newsletter. Users may be asked for:
+                                    </p>
+                                    <div className="space-y-2 pl-2">
+                                        {[
+                                            "Full Name",
+                                            "Billing Address & Shipping Address",
+                                            "Email Address",
+                                            "Phone Number"
+                                        ].map((item, i) => (
+                                            <div key={i} className="flex items-start gap-4">
+                                                <span className="mt-2 w-1.5 h-1.5 bg-black rounded-full flex-shrink-0" />
+                                                <span className="text-gray-600 font-light text-lg">{item}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-lg font-medium text-black mb-2">B. Non-personal Identification Information</h3>
+                                    <p className="text-gray-600 font-light leading-relaxed text-lg mb-4">
+                                        We may automatically collect non-personal identification information whenever you interact with our Site. This may include:
+                                    </p>
+                                    <div className="space-y-2 pl-2">
+                                        {[
+                                            "Browser name and version",
+                                            "Type of computer or device used",
+                                            "Operating system",
+                                            "Internet Service Provider utilized",
+                                            "Other similar technical information"
+                                        ].map((item, i) => (
+                                            <div key={i} className="flex items-start gap-4">
+                                                <span className="mt-2 w-1.5 h-1.5 bg-black rounded-full flex-shrink-0" />
+                                                <span className="text-gray-600 font-light text-lg">{item}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
-                        {/* Controlling Information */}
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">
-                                Controlling Your Personal Information
-                            </h2>
-                            <p className="text-gray-600 font-light leading-relaxed mb-3">
-                                You may choose to restrict the collection or use of your personal information in the following ways:
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">3. How We Use Use Your Information</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg mb-4">
+                                We may use the information we collect from you when you register, make a purchase, or surf the website in the following ways:
                             </p>
-                            <ul className="list-disc pl-6 space-y-2 text-gray-600 font-light leading-relaxed mb-4">
-                                <li>Whenever you are asked to fill in a form on the website, look for the box that you can click to indicate that you do not want the information to be used by anybody for direct marketing purposes</li>
-                                <li>If you have previously agreed to us using your personal information for direct marketing purposes, you may change your mind at any time by writing to or emailing us at <a href="mailto:info.yura.co@gmail.com" className="text-black font-medium hover:underline">info.yura.co@gmail.com</a></li>
-                            </ul>
-                            <p className="text-gray-600 font-light leading-relaxed mb-4">
-                                We will not sell, distribute or lease your personal information to third parties unless we have your permission or are required by law to do so. We may use your personal information to send you promotional information about third parties which we think you may find interesting if you tell us that you wish this to happen.
+                            <div className="space-y-4 pl-2">
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-medium text-black">To Process Transactions</h3>
+                                    <p className="text-gray-600 font-light text-lg leading-relaxed">
+                                        We use the information Users provide about themselves when placing an order only to provide service to that order. We do not share this information with outside parties except to the extent necessary to provide the service (e.g., sharing address with courier partners).
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-medium text-black">To Improve Customer Service</h3>
+                                    <p className="text-gray-600 font-light text-lg leading-relaxed">
+                                        Information you provide helps us respond to your customer service requests and support needs more efficiently.
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-medium text-black">To Personalize User Experience</h3>
+                                    <p className="text-gray-600 font-light text-lg leading-relaxed">
+                                        We may use information in the aggregate to understand how our Users as a group use the services and resources provided on our Site.
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-medium text-black">To Send Periodic Emails</h3>
+                                    <p className="text-gray-600 font-light text-lg leading-relaxed">
+                                        We may use the email address to send User information and updates pertaining to their order. It may also be used to respond to their inquiries, questions, and/or other requests.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">4. Web Browser Cookies</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                Our Site may use "cookies" to enhance User experience. User's web browser places cookies on their hard drive for record-keeping purposes and sometimes to track information about them. User may choose to set their web browser to refuse cookies, or to alert you when cookies are being sent. If they do so, note that some parts of the Site may not function properly.
                             </p>
-                            <p className="text-gray-600 font-light leading-relaxed">
-                                If you believe that any information we are holding on you is incorrect or incomplete, please write to B3, Devdarshan Society Pererawadi Sakinaka, Near Theresa High School Mumbai MAHARASHTRA 400072 or contact us at <a href="tel:8879963368" className="text-black font-medium hover:underline">8879963368</a> or <a href="mailto:info.yura.co@gmail.com" className="text-black font-medium hover:underline">info.yura.co@gmail.com</a> as soon as possible. We will promptly correct any information found to be incorrect.
+                            <p className="text-gray-600 font-light leading-relaxed text-lg mb-4">
+                                We utilize cookies to:
+                            </p>
+                            <div className="space-y-2 pl-2">
+                                {[
+                                    "Remember and process the items in your shopping cart.",
+                                    "Understand and save user's preferences for future visits.",
+                                    "Compile aggregate data about site traffic and site interactions in order to offer better site experiences and tools in the future."
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-start gap-4">
+                                        <span className="mt-2 w-1.5 h-1.5 bg-black rounded-full flex-shrink-0" />
+                                        <span className="text-gray-600 font-light text-lg">{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">5. How We Protect Your Information</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                We adopt appropriate data collection, storage, and processing practices and security measures to protect against unauthorized access, alteration, disclosure, or destruction of your personal information, username, password, transaction information, and data stored on our Site.
+                            </p>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                Sensitive and private data exchange between the Site and its Users happens over a SSL secured communication channel and is encrypted and protected with digital signatures.
                             </p>
                         </section>
 
-                        {/* Contact Section */}
-                        <section className="pt-8 border-t border-gray-100">
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">
-                                Privacy Questions?
-                            </h2>
-                            <p className="text-gray-600 font-light leading-relaxed mb-4">
-                                If you have any questions about this Privacy Policy, please contact us:
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">6. Sharing Your Personal Information</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                We do not sell, trade, or rent Users personal identification information to others. We may share generic aggregated demographic information not linked to any personal identification information regarding visitors and users with our business partners, trusted affiliates, and advertisers for the purposes outlined above.
                             </p>
-                            <div className="space-y-2 text-gray-600 font-light">
-                                <p>
-                                    <strong className="font-medium text-black">Email:</strong>{' '}
-                                    <a href="mailto:info.yura.co@gmail.com" className="text-black hover:underline">
-                                        info.yura.co@gmail.com
-                                    </a>
-                                </p>
-                                <p>
-                                    <strong className="font-medium text-black">Phone:</strong>{' '}
-                                    <a href="tel:8879963368" className="text-black hover:underline">
-                                        8879963368
-                                    </a>
-                                </p>
-                                <p>
-                                    <strong className="font-medium text-black">Address:</strong> B3, Devdarshan Society Pererawadi Sakinaka, Near Theresa High School, Mumbai, Maharashtra 400072
-                                </p>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                We may use third-party service providers (such as <strong>Razorpay</strong> for payments and various <strong>Courier Services</strong> for logistics) to help us operate our business and the Site or administer activities on our behalf. We may share your information with these third parties for those limited purposes provided that you have given us your permission.
+                            </p>
+                        </section>
+
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">7. Third-Party Websites</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                Users may find advertising or other content on our Site that link to the sites and services of our partners, suppliers, advertisers, sponsors, licensors, and other third parties. We do not control the content or links that appear on these sites and are not responsible for the practices employed by websites linked to or from our Site. In addition, these sites or services, including their content and links, may be constantly changing. These sites and services may have their own privacy policies and customer service policies. Browsing and interaction on any other website, including websites which have a link to our Site, is subject to that website's own terms and policies.
+                            </p>
+                        </section>
+
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">8. Changes to This Privacy Policy</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                <strong>YURAA</strong> has the discretion to update this privacy policy at any time. When we do, we will post a notification on the main page of our Site and revise the updated date at the bottom of this page. We encourage Users to frequently check this page for any changes to stay informed about how we are helping to protect the personal information we collect. You acknowledge and agree that it is your responsibility to review this privacy policy periodically and become aware of modifications.
+                            </p>
+                        </section>
+
+                        <section className="space-y-4">
+                            <h2 className="text-2xl font-serif font-medium text-black">9. Your Rights</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg">
+                                Under applicable laws, you may have the right to access, correct, update, or delete the personal information we hold about you. If you wish to exercise any of these rights, please contact us using the information below.
+                            </p>
+                        </section>
+
+                        <hr className="border-gray-100" />
+
+                        {/* Contact */}
+                        <section className="text-center">
+                            <h2 className="text-xl font-serif font-medium text-black mb-4">Contacting Us</h2>
+                            <p className="text-gray-600 font-light leading-relaxed text-lg mb-8 max-w-2xl mx-auto">
+                                If you have any questions about this Privacy Policy, the practices of this site, or your dealings with this site, please contact us at:
+                            </p>
+
+                            <div className="max-w-2xl mx-auto">
+                                <div className="space-y-8 pl-4 text-left">
+                                    <div className="flex items-start gap-6 group">
+                                        <MapPin className="w-6 h-6 stroke-[1.5] text-gray-400 group-hover:text-black transition-colors mt-1 flex-shrink-0" />
+                                        <div>
+                                            <h3 className="text-lg font-medium text-black mb-1">Mailing Address</h3>
+                                            <p className="text-lg font-light text-gray-600 leading-relaxed">
+                                                <strong>YURAA</strong><br />
+                                                Devdarshan Society, Pererawadi,<br />
+                                                Sakinaka, Mumbai, Maharashtra 400072<br />
+                                                (Near Theresa High School)
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-6 group">
+                                        <Mail className="w-6 h-6 stroke-[1.5] text-gray-400 group-hover:text-black transition-colors mt-1 flex-shrink-0" />
+                                        <div>
+                                            <h3 className="text-lg font-medium text-black mb-1">Email Us</h3>
+                                            <a href="mailto:info.yura.co@gmail.com" className="text-lg font-light text-gray-600 border-b border-transparent group-hover:border-black transition-all">
+                                                info.yura.co@gmail.com
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-6 group">
+                                        <FaWhatsapp className="w-6 h-6 text-gray-400 group-hover:text-black transition-colors mt-1 flex-shrink-0" />
+                                        <div>
+                                            <h3 className="text-lg font-medium text-black mb-1">Chat Support</h3>
+                                            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-lg font-light text-gray-600 border-b border-transparent group-hover:border-black transition-all">
+                                                Click to chat on WhatsApp
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
                     </div>
-
                 </div>
             </div>
         </MainLayout>

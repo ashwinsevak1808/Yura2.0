@@ -151,7 +151,7 @@ export const EmailService = {
             // welcome.html doesn't have many placeholders, maybe just name?
             // Actually my welcome.html doesn't have {{name}}. It says "Welcome to the world of Yura."
             // I'll leave replacements empty or just action_url if needed.
-            // The template has static link https://shop-yura.com.
+
             const replacements = {};
 
             const htmlContent = EmailTemplate.getTemplate('welcome.html', replacements);

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
         template: '%s | YURAA Admin',
         default: 'Admin Dashboard ',
     },
-    description: 'Yuraa E-Commerce Administration',
+    description: 'YURAA E-Commerce Administration',
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

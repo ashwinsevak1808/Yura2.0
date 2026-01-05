@@ -161,13 +161,19 @@ function CollectionsContent() {
                 <div className="fixed inset-0 z-50 lg:hidden">
                     <div
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-                        onClick={() => setIsMobileFiltersOpen(false)}
+                        onClick={() => {
+                            setIsMobileFiltersOpen(false);
+                            window.dispatchEvent(new Event('mobile-filter-close'));
+                        }}
                     />
                     <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl">
                         <div className="flex flex-col h-full">
                             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                                 <h2 className="text-base font-bold uppercase tracking-widest text-black">Filters</h2>
-                                <button onClick={() => setIsMobileFiltersOpen(false)} className="text-black hover:text-gray-600 transition-colors p-1">
+                                <button onClick={() => {
+                                    setIsMobileFiltersOpen(false);
+                                    window.dispatchEvent(new Event('mobile-filter-close'));
+                                }} className="text-black hover:text-gray-600 transition-colors p-1">
                                     <X className="h-6 w-6" />
                                 </button>
                             </div>
@@ -211,7 +217,10 @@ function CollectionsContent() {
                             </div>
                             <div className="border-t border-gray-100 px-6 py-6 bg-gray-50">
                                 <button
-                                    onClick={() => setIsMobileFiltersOpen(false)}
+                                    onClick={() => {
+                                        setIsMobileFiltersOpen(false);
+                                        window.dispatchEvent(new Event('mobile-filter-close'));
+                                    }}
                                     className="w-full bg-black text-white py-4 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
                                 >
                                     View {products.length} Products
@@ -238,7 +247,7 @@ function CollectionsContent() {
                                     <h3 className="text-lg font-bold text-black mb-1">LAUNCH OFFER - 25% OFF!</h3>
                                     <p className="text-sm text-gray-700 font-light">
                                         All products in this collection are eligible for our special launch discount of 25% OFF.
-                                        Offer valid until Feb 26, 2026.
+                                        Offer valid until March 06, 2026.
                                     </p>
                                 </div>
                             </div>
@@ -336,7 +345,10 @@ function CollectionsContent() {
                                 </div>
 
                                 <button
-                                    onClick={() => setIsMobileFiltersOpen(true)}
+                                    onClick={() => {
+                                        setIsMobileFiltersOpen(true);
+                                        window.dispatchEvent(new Event('mobile-filter-open'));
+                                    }}
                                     className="lg:hidden flex items-center gap-2 text-xs font-bold uppercase tracking-widest border border-black px-4 py-2 hover:bg-black hover:text-white transition-colors"
                                 >
                                     Filter {activeFiltersCount > 0 && `(${activeFiltersCount})`}

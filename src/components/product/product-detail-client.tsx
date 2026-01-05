@@ -47,6 +47,23 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
         });
     };
 
+    // GA4: Track View Item
+    React.useEffect(() => {
+        if (product && typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'view_item', {
+                currency: 'INR',
+                value: product.price,
+                items: [{
+                    item_id: product.id,
+                    item_name: product.name,
+                    price: product.price,
+                    item_category: product.category,
+                    quantity: 1
+                }]
+            });
+        }
+    }, [product]);
+
     const handleAddToCart = () => {
         if (!product) return;
         if (isOutOfStock) {
@@ -59,6 +76,23 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
         }
 
         CartService.addToCart(product, quantity, selectedSize, 'Default');
+
+        // GA4: Track Add to Cart
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+            (window as any).gtag('event', 'add_to_cart', {
+                currency: 'INR',
+                value: product.price * quantity,
+                items: [{
+                    item_id: product.id,
+                    item_name: product.name,
+                    price: product.price,
+                    item_category: product.category,
+                    quantity: quantity,
+                    item_variant: selectedSize
+                }]
+            });
+        }
+
         toast.success("Added to bag");
     };
 

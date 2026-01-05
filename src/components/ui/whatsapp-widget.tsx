@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 interface WhatsAppWidgetProps {
     phoneNumber?: string;
@@ -12,7 +13,27 @@ export default function WhatsAppWidget({
     phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     message = "Hi YURAA, I'm looking for products on your website."
 }: WhatsAppWidgetProps) {
+    const pathname = usePathname();
+    const [isVisible, setIsVisible] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
+
+    // Hide on specific routes
+    const hiddenRoutes = ['/cart', '/checkout', '/order/status', '/payment'];
+    const shouldHide = hiddenRoutes.some(route => pathname?.startsWith(route));
+
+    // Also listen for mobile filter open events (custom event)
+    useEffect(() => {
+        const handleFilterOpen = () => setIsVisible(false);
+        const handleFilterClose = () => setIsVisible(true);
+
+        window.addEventListener('mobile-filter-open', handleFilterOpen);
+        window.addEventListener('mobile-filter-close', handleFilterClose);
+
+        return () => {
+            window.removeEventListener('mobile-filter-open', handleFilterOpen);
+            window.removeEventListener('mobile-filter-close', handleFilterClose);
+        };
+    }, []);
 
     const handleWhatsAppClick = () => {
         const encodedMessage = encodeURIComponent(message);
@@ -20,6 +41,8 @@ export default function WhatsAppWidget({
         window.open(whatsappUrl, '_blank');
         setIsOpen(false);
     };
+
+    if (shouldHide || !isVisible) return null;
 
     return (
         <>
