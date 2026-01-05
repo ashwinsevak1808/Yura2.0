@@ -41,3 +41,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 env.prod.replacement
+env.prod.upload
+.agent/workflows/deploy-to-vercel.md
+scripts/create_prod_admin.js
+scripts/debug_otp.js
+scripts/fix_prod_admin.js
+scripts/set_prod_role.js
+scripts/test_fetch.js
+scripts/test_shiprocket_auth.js

@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "yyinahtqphrbareoyqfg.supabase.co",
+      },
+      {
+        protocol: "https",
         hostname: "*.cdninstagram.com",
       },
       {
