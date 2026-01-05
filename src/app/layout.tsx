@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Analytics } from "@vercel/analytics/next";
+import CookieBanner from "@/components/ui/cookie-banner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -74,6 +75,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Analytics />
+          <CookieBanner />
         </Providers>
       </body>
     </html>

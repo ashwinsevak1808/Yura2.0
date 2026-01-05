@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
 
                 <div className="relative z-10">
-                    <h1 className="text-4xl font-serif tracking-tight font-bold">YURA.</h1>
+                    <h1 className="text-4xl font-serif tracking-tight font-bold">YURAA.</h1>
                 </div>
 
                 <div className="relative z-10 max-w-lg space-y-6">
@@ -165,7 +165,7 @@ export default function AdminLoginPage() {
 
                     <div className="mt-10 pt-10 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400 uppercase tracking-wider">
                         <span>Secure Connection</span>
-                        <span>YURA Platform 1.0</span>
+                        <span>YURAA Platform 1.0</span>
                     </div>
                 </div>
             </div>

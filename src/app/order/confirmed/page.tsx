@@ -40,6 +40,32 @@ function OrderConfirmedContent() {
         .then(res => {
           if (res.success && res.order) {
             setFullOrderData(res.order);
+
+            // GA4: Track Purchase
+            if (typeof window !== 'undefined' && (window as any).gtag) {
+              // Check if we already tracked this order to avoid duplicates (basic check)
+              const trackedOrders = JSON.parse(localStorage.getItem('tracked_orders') || '[]');
+              if (!trackedOrders.includes(res.order.id)) {
+                (window as any).gtag('event', 'purchase', {
+                  transaction_id: res.order.id,
+                  value: res.order.total_amount,
+                  tax: res.order.tax,
+                  shipping: res.order.shipping_cost,
+                  currency: 'INR',
+                  items: res.order.items?.map((item: any) => ({
+                    item_name: item.product_name,
+                    item_id: item.product_id, // Assuming this exists, else use item.id
+                    price: item.price,
+                    quantity: item.quantity,
+                    item_variant: item.size
+                  }))
+                });
+
+                // Mark as tracked
+                trackedOrders.push(res.order.id);
+                localStorage.setItem('tracked_orders', JSON.stringify(trackedOrders));
+              }
+            }
           }
         })
         .finally(() => setLoadingInvoice(false));

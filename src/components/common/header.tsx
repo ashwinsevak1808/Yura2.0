@@ -34,7 +34,7 @@ export default function PremiumKurtiHeader() {
             {[...Array(10)].map((_, i) => (
               <div key={i} className="flex items-center mx-8 text-xs tracking-wider">
                 <span className="font-medium text-yellow-200 mr-2">LAUNCH OFFER:</span>
-                <span className="font-light mr-4">Get 25% OFF on all products! Valid until Feb 26, 2026</span>
+                <span className="font-light mr-4">Get 25% OFF on all products! Valid until March 06, 2026</span>
                 <span className="text-gray-600">•</span>
               </div>
             ))}

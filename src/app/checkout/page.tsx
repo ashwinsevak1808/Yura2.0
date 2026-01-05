@@ -164,7 +164,9 @@ export default function CheckoutPage() {
 
                 if (result.success) {
                     CartService.clearCart();
-                    router.push(`/order/confirmed?order_id=${result.orderId}&payment_method=COD`);
+                    console.log("Order placed successfully (COD). Redirecting...");
+                    // Use window.location.href to avoid client-side routing issues on critical transitions
+                    window.location.href = `/order/confirmed?order_id=${result.orderId}&payment_method=COD`;
                 } else {
                     throw new Error(result.message);
                 }
@@ -203,7 +205,7 @@ export default function CheckoutPage() {
                     key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                     amount: razorpayOrderResult.amount,
                     currency: razorpayOrderResult.currency,
-                    name: "YURAA",
+                    name: "YURAA", // UPDATED BRAND NAME
                     description: "Order Payment",
                     order_id: razorpayOrderResult.orderId,
                     prefill: {
@@ -241,10 +243,9 @@ export default function CheckoutPage() {
 
                                 if (orderResult.success) {
                                     CartService.clearCart();
-                                    // Redirect to order confirmed page with payment details
-                                    router.push(
-                                        `/order/confirmed?order_id=${orderResult.orderId}&payment_method=ONLINE&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}`
-                                    );
+                                    console.log("Order placed successfully (Online). Redirecting...");
+                                    // Use window.location.href here as well
+                                    window.location.href = `/order/confirmed?order_id=${orderResult.orderId}&payment_method=ONLINE&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}`;
                                 } else {
                                     throw new Error(orderResult.message || "Failed to create order after payment");
                                 }
@@ -253,11 +254,9 @@ export default function CheckoutPage() {
                             }
                         } catch (error) {
                             console.error("Payment handler error:", error);
-                            // Redirect to failure page
+                            // Redirect to failure page using window.location for consistency
                             const errorMsg = error instanceof Error ? error.message : "Order creation failed";
-                            router.push(
-                                `/payment/failure?reason=Order Creation Failed&description=${encodeURIComponent(errorMsg)}. Please contact support.&payment_id=${response.razorpay_payment_id || ""}`
-                            );
+                            window.location.href = `/payment/failure?reason=Order Creation Failed&description=${encodeURIComponent(errorMsg)}. Please contact support.&payment_id=${response.razorpay_payment_id || ""}`;
                             setSubmitting(false);
                         }
                     },

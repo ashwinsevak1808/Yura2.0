@@ -231,7 +231,7 @@ export class ShiprocketService {
                 shipping_pincode: "395007",
                 shipping_state: "Gujarat",
                 shipping_country: "India",
-                shipping_email: "info@yura.co.in",
+                shipping_email: "info.yura.co@gmail.com",
                 shipping_phone: "9876543210",
                 order_items: orderItems,
                 payment_method: "Prepaid",

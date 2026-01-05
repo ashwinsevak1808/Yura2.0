@@ -158,7 +158,7 @@ export function InvoiceTemplate({ invoice }: InvoiceTemplateProps) {
 
                     <div className="text-right">
                         <p className="font-serif italic text-lg text-gray-300">Essential Luxury.</p>
-                        <p className="text-[9px] text-gray-200 uppercase tracking-widest mt-1">yura.co.in</p>
+                        <p className="text-[9px] text-gray-200 uppercase tracking-widest mt-1">yuraaclothing.com</p>
                     </div>
                 </footer>
             </div>

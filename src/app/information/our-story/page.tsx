@@ -1,9 +1,9 @@
 import { MainLayout } from "@/components/layout/main_layout";
-
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Our Story',
+    title: 'Our Story | YURAA',
+    description: 'The story of YURAA - Founded by Shweta, Deepika & Kiran.',
 };
 
 export default function OurStoryPage() {
@@ -13,48 +13,62 @@ export default function OurStoryPage() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-32">
 
                     {/* Header */}
-                    <div className="max-w-4xl mb-16 pb-12 border-b border-gray-100">
-                        <p className="text-xs font-bold text-black mb-4 uppercase tracking-widest">
-                            About Us
-                        </p>
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium text-black mb-6 leading-tight">
+                    <div className="max-w-4xl mx-auto mb-20 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        <span className="inline-block mb-4 text-[10px] font-bold tracking-[0.25em] text-gray-400 uppercase">
+                            About The Brand
+                        </span>
+                        <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif text-black mb-6 leading-none tracking-tight">
                             Our Story
                         </h1>
-                        <p className="text-gray-500 text-base font-light max-w-2xl leading-relaxed">
-                            Crafting timeless elegance through premium fabrics and meticulous attention to detail.
+                        <div className="w-12 h-0.5 bg-black/80 mx-auto mb-8"></div>
+                        <p className="text-gray-600 text-lg sm:text-xl font-light leading-relaxed max-w-xl mx-auto font-serif italic text-balance">
+                            "Crafting timeless elegance through premium fabrics and meticulous attention to detail."
                         </p>
                     </div>
 
                     {/* Content */}
-                    <div className="max-w-3xl space-y-12">
+                    <div className="max-w-2xl mx-auto space-y-16">
 
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">Our Beginning</h2>
-                            <p className="text-gray-600 font-light leading-relaxed">
-                                Founded with a passion for traditional craftsmanship and contemporary design, Yura represents the perfect blend of heritage and modernity. Each piece in our collection tells a story of skilled artisans, premium materials, and timeless elegance.
-                            </p>
+                        <section className="fade-in">
+                            <h2 className="text-2xl font-serif font-medium text-black mb-6">Our Beginning</h2>
+                            <div className="space-y-4 text-gray-600 font-light leading-relaxed text-lg">
+                                <p>
+                                    This brand began with three friends who never planned to start a business together. Over the years, shared conversations, creativity, and a love for clothing slowly turned into an idea — and eventually, into this brand.
+                                </p>
+                                <p>
+                                    What started at home grew with trust, teamwork, and the desire to create something meaningful together.
+                                </p>
+                            </div>
                         </section>
 
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">Our Philosophy</h2>
-                            <p className="text-gray-600 font-light leading-relaxed mb-4">
-                                We believe that true luxury lies in the details. Every kurti we create is a testament to our commitment to quality, from the selection of the finest fabrics to the precision of each stitch. Our designs celebrate the modern woman who values both tradition and contemporary style.
-                            </p>
-                            <p className="text-gray-600 font-light leading-relaxed">
-                                Sustainability and ethical practices are at the heart of everything we do. We work closely with local artisans, ensuring fair wages and preserving traditional techniques for future generations.
-                            </p>
+                        <section className="fade-in">
+                            <h2 className="text-2xl font-serif font-medium text-black mb-6">Our Philosophy</h2>
+                            <div className="space-y-4 text-gray-600 font-light leading-relaxed text-lg">
+                                <p>
+                                    We believe in creating clothing that blends modern styles with traditional elements, while staying true to slow and mindful fashion. Every design is created by us, with attention to detail and thoughtful handwork.
+                                </p>
+                                <p>
+                                    All our products are made at home, in small quantities. We do not mass-produce. Each piece is crafted with care, patience, and intention.
+                                </p>
+                            </div>
                         </section>
 
-                        <section>
-                            <h2 className="text-2xl font-serif font-medium text-black mb-4">Our Commitment</h2>
-                            <p className="text-gray-600 font-light leading-relaxed">
-                                We're dedicated to providing you with not just beautiful clothing, but an experience that reflects our values of quality, authenticity, and exceptional service. Each purchase supports our community of artisans and contributes to the preservation of traditional craftsmanship.
-                            </p>
+                        <section className="fade-in">
+                            <h2 className="text-2xl font-serif font-medium text-black mb-6">Our Commitment</h2>
+                            <div className="space-y-4 text-gray-600 font-light leading-relaxed text-lg">
+                                <p>
+                                    From fabric hunting to design, stitching, quality checks, packing, and delivery — we are personally involved in every step. Each order is packed by us and sent with love, ensuring it reaches you just the way it was meant to.
+                                </p>
+                                <p>
+                                    We are committed to honesty, quality, and creating clothing that our customers truly love and feel connected to.
+                                </p>
+                            </div>
                         </section>
 
-                        <section className="pt-8 border-t border-gray-100">
-                            <p className="text-sm text-gray-500 font-light italic">
-                                Thank you for being part of our journey. We look forward to helping you discover pieces that will become cherished parts of your wardrobe.
+                        <section className="pt-12 border-t border-gray-100 mt-12">
+                            <p className="text-xl font-serif text-black italic">
+                                With love,<br />
+                                <span className="mt-2 block text-gray-600">Shweta, Deepika & Kiran 🤍</span>
                             </p>
                         </section>
                     </div>
