@@ -54,6 +54,7 @@ export default function CartPage() {
     const calculate = async () => {
       const sub = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
       setSubtotal(sub);
+      setTotal(sub); // Initialize total with subtotal to avoid 0 flash
 
       // Fetch charges dynamically from Supabase
       const { ChargesService } = await import('@/services/charges.service');
