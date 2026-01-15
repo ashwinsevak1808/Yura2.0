@@ -5,6 +5,8 @@ import { MainLayout } from "../components/layout/main_layout";
 import { getAllProducts } from "@/services/products.service";
 import InstagramFeed from "../components/landing/instagram-feed";
 
+export const revalidate = 60;
+
 export default async function Home() {
   const products = await getAllProducts();
 

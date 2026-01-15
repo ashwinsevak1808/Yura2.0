@@ -19,6 +19,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://yuraaclothing.com'),
   title: {
     template: '%s | YURAA',
     default: 'YURAA - Premium Kurtis',
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'YURAA - Premium Kurtis',
     description: "Discover premium office wear for the modern professional.",
-    url: 'https://yuraa.co.in',
+    url: '/',
     siteName: 'YURAA',
     images: [
       {

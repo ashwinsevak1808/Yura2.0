@@ -16,6 +16,52 @@ interface ProductDetailClientProps {
     relatedProducts: Product[];
 }
 
+const FormattedDescription = ({ text }: { text: string }) => {
+    if (!text) return null;
+
+    // Check for the delimiter provided by user (supports —, --, or -)
+    const parts = text.split(/(?:—|--|-)\s*Product Details\s*(?:—|--|-)/i);
+    const mainDescription = parts[0];
+    const detailsPart = parts.length > 1 ? parts[1] : null;
+
+    return (
+        <div className="space-y-6">
+            <p className="text-sm text-gray-600 leading-relaxed font-light">{mainDescription.trim()}</p>
+
+            {detailsPart && (
+                <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-3">— Product Details —</h3>
+                    <ul className="space-y-2">
+                        {detailsPart.split('•').filter(item => item.trim().length > 0).map((item, index) => {
+                            const cleanItem = item.trim();
+                            // Optional: bold the key if it looks like "Key: Value"
+                            const colonIndex = cleanItem.indexOf(':');
+                            if (colonIndex > -1) {
+                                const key = cleanItem.substring(0, colonIndex);
+                                const value = cleanItem.substring(colonIndex + 1);
+                                return (
+                                    <li key={index} className="text-sm text-gray-600 font-light flex items-start">
+                                        <span className="mr-2 mt-1.5 h-1 w-1 rounded-full bg-gray-400 shrink-0"></span>
+                                        <span>
+                                            <strong className="font-medium text-gray-900">{key}:</strong>{value}
+                                        </span>
+                                    </li>
+                                );
+                            }
+                            return (
+                                <li key={index} className="text-sm text-gray-600 font-light flex items-start">
+                                    <span className="mr-2 mt-1.5 h-1 w-1 rounded-full bg-gray-400 shrink-0"></span>
+                                    <span>{cleanItem}</span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
     // Initialize state with data passed from server
     const [selectedSize, setSelectedSize] = useState<string>(() => {
@@ -220,7 +266,7 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                                 </div>
 
                                 <div className="mb-8 text-gray-600 text-sm leading-relaxed font-light">
-                                    <p>{product.description || product.full_description}</p>
+                                    <p>{product.description}</p>
                                 </div>
 
                                 <form onSubmit={(e) => { e.preventDefault(); handleAddToCart(); }}>
@@ -314,10 +360,6 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                                     >
                                         {isOutOfStock ? "Out of Stock" : `Add to Bag — ₹${(product.price * quantity).toLocaleString()}`}
                                     </button>
-
-                                    <p className="mt-4 text-center text-xs text-gray-500 font-light">
-                                        Free shipping on orders over ₹2000. Imports & taxes included.
-                                    </p>
                                 </form>
 
                                 <div className="mt-8 border-t border-gray-100 pt-6 space-y-5">
@@ -332,11 +374,8 @@ export default function ProductDetailClient({ product, relatedProducts }: Produc
                                         </div>
                                     )}
                                     {product.full_description && (
-                                        <div>
-                                            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-3">Details</h3>
-                                            <p className="text-sm text-gray-600 font-light leading-relaxed">
-                                                {product.full_description}
-                                            </p>
+                                        <div className="pt-4">
+                                            <FormattedDescription text={product.full_description} />
                                         </div>
                                     )}
                                 </div>

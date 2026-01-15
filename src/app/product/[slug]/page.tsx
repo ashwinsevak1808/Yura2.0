@@ -22,7 +22,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: product.og_title || product.meta_title || product.name,
       description: product.og_description || product.meta_description || product.description || undefined,
-      images: product.og_image ? [{ url: product.og_image }] : product.images?.[0]?.image_url ? [{ url: product.images[0].image_url }] : [],
+      url: `/product/${slug}`,
+      siteName: 'YURAA',
+      images: product.og_image
+        ? [{ url: product.og_image }]
+        : product.images && product.images.length > 0
+          ? [{ url: product.images[0].image_url }]
+          : [],
     },
     twitter: {
       card: (product.twitter_card as "summary" | "summary_large_image") || "summary_large_image",
